@@ -172,6 +172,9 @@ STATIC_URL = 'static/'
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
+STATIC_ROOT = BASE_DIR / 'static_collected'   # <-- add this
+
+
 TEMPLATES[0]["DIRS"] = [BASE_DIR / "templates"]
 TEMPLATES[0]["APP_DIRS"] = True
 LOGIN_URL = "login"

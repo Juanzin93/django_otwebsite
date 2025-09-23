@@ -25,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-wju_hw5c8h#=fj6l!ywm0kzrbx$@=vr#_)5h8&m-4qcf$1m0^a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 DATABASE_ROUTERS = ["pages.dbrouters.OTServRouter"]
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["retrowarot.com", "www.retrowarot.com"]
 
 BAZAAR_FEE_BPS = 100                # 1% fee
 BAZAAR_FEE_ACCOUNT_ID = 1           # treasury OT account_id to receive fees

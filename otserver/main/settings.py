@@ -29,6 +29,7 @@ DEBUG = False
 DATABASE_ROUTERS = ["pages.dbrouters.OTServRouter"]
 ALLOWED_HOSTS = ["retrowarot.com", "www.retrowarot.com"]
 
+
 BAZAAR_FEE_BPS = 100                # 1% fee
 BAZAAR_FEE_ACCOUNT_ID = 1           # treasury OT account_id to receive fees
 
@@ -187,7 +188,7 @@ LOGOUT_REDIRECT_URL = "home"    # after logout
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # OT status query (ProtocolStatus::sendStatusString)
-OT_STATUS_HOST = "game.retrowarot.com"   # your game server IP
+OT_STATUS_HOST = "127.0.0.1"   # your game server IP
 OT_STATUS_PORT = 7171          # your status/listen port
 OT_STATUS_TIMEOUT = 3.0        # seconds
 OT_STATUS_MIN_INTERVAL = 15

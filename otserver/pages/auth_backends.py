@@ -80,7 +80,6 @@ class OTAccountBackend(BaseBackend):
             if OT_USERNAME_COL == "id"
             else f"{OT_USERNAME_COL} AS uname"
         )
-        blocked_select = f", {OT_BLOCKED_COL} AS ublocked" if OT_BLOCKED_COL else ""
 
         db = DB(alias=OT_DB_ALIAS)
         row = db.run(
@@ -91,7 +90,6 @@ class OTAccountBackend(BaseBackend):
                 {uname_select},
                 {OT_PASSWORD_COL} AS upass,
                 {OT_EMAIL_COL} AS uemail
-                {blocked_select}
             FROM {OT_ACCOUNT_TABLE}
             WHERE {" OR ".join(where_parts)}
             LIMIT 1
@@ -100,12 +98,6 @@ class OTAccountBackend(BaseBackend):
         )
         if not row:
             return None
-
-        # Blocked?
-        if OT_BLOCKED_COL:
-            ublocked = row.get("ublocked")
-            if ublocked not in (None, 0, "0", False):
-                return None
 
         # Verify password against configured hash type
         if not _check_password(password, str(row.get("upass") or ""), OT_PASSWORD_TYPE):

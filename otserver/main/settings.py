@@ -28,7 +28,8 @@ SECRET_KEY = 'django-insecure-wju_hw5c8h#=fj6l!ywm0kzrbx$@=vr#_)5h8&m-4qcf$1m0^a
 DEBUG = False
 DATABASE_ROUTERS = ["pages.dbrouters.OTServRouter"]
 ALLOWED_HOSTS = ["retrowarot.com", "www.retrowarot.com"]
-
+CSRF_TRUSTED_ORIGINS = ["https://retrowarot.com", "https://www.retrowarot.com"]
+SECURE_SSL_REDIRECT = False  # we’ll enable later
 
 BAZAAR_FEE_BPS = 100                # 1% fee
 BAZAAR_FEE_ACCOUNT_ID = 1           # treasury OT account_id to receive fees

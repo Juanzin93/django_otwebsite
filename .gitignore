@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+# Virtual envs
+.venv/
+venv/
+# Django
+*.log
+db.sqlite3
+media/
+# Static collection output
+otserver/static_collected/
+# Env & secrets
+otserver/.env
+.env
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+# OS
+.DS_Store
+Thumbs.db
+EOF

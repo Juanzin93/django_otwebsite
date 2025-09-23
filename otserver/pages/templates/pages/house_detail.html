@@ -1,0 +1,59 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block title %}House: {{ h.name }}{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">HOUSE</h3>
+
+    <div class="two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="panel--inner">
+        <h4 class="char__sub">Info</h4>
+        <ul class="kv">
+          <li><span>Name:</span>  <b>{{ h.name }}</b></li>
+          <li><span>Town:</span>  <b>{{ h.town_id|town_name }} ({{ h.town_id }})</b></li>
+          <li><span>Size:</span>  <b>{{ h.size }}</b></li>
+          <li><span>Beds:</span>  <b>{{ h.beds }}</b></li>
+          <li><span>Rent:</span>  <b>{{ h.rent }}</b></li>
+          {% if h.guildhall|default:0|add:0 > 0 %}
+          <li><span>Guildhall:</span> <b>Yes</b></li>
+          {% endif %}
+          <li><span>Owner:</span>
+            {% if h.owner|default:0|add:0 > 0 %}
+              <b><a class="link" href="{% url 'character_detail' name=h.owner_name %}">{{ h.owner_name }}</a></b>
+            {% else %}
+              <b class="muted">Empty</b>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+
+      <div class="panel--inner">
+        <h4 class="char__sub">Access Lists</h4>
+        {% if lists %}
+          <table class="table">
+            <thead><tr><th>List</th><th>Value</th></tr></thead>
+            <tbody>
+              {% for L in lists %}
+              <tr>
+                <td>
+                  {% if L.listid == 0 %}Guests
+                  {% elif L.listid == 1 %}Sub-owners
+                  {% elif L.listid == 2 %}Door
+                  {% else %}#{{ L.listid }}{% endif %}
+                </td>
+                <td><code style="white-space:pre-wrap">{{ L.list }}</code></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="muted">No access lists.</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

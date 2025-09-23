@@ -1,0 +1,43 @@
+{% extends "pages/index.html" %}
+{% block title %}{{ month_name }} {{ year }} — News Archive{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">NEWS — {{ month_name }} {{ year }}</h3>
+
+    {% if posts %}
+      <ul class="news-list">
+        {% for n in posts %}
+          <li class="news-item">
+            <h4 class="news-item__title">
+              <a href="{% url 'news_detail' slug=n.slug %}">{{ n.title }}</a>
+            </h4>
+            <div class="news-item__meta">{{ n.published_at|date:"Y-m-d H:i" }}</div>
+            <p class="news-item__summary">{{ n.summary|safe|default:n.body|safe|truncatechars:180 }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+
+      {% if page_meta.total_pages > 1 %}
+        <nav class="pager">
+          {% if page_obj.has_previous %}
+            <a class="link" href="?page=1">« First</a>
+            <a class="link" href="?page={{ page_obj.previous_page_number }}">‹ Prev</a>
+          {% endif %}
+          <span class="link is-current">Page {{ page_meta.page }} / {{ page_meta.total_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="link" href="?page={{ page_obj.next_page_number }}">Next ›</a>
+            <a class="link" href="?page={{ page_meta.total_pages }}">Last »</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    {% else %}
+      <p class="muted">No posts this month.</p>
+    {% endif %}
+
+    <div style="margin-top:10px;">
+      <a class="btn btn--ghost" href="{% url 'news_archive' %}">← Back to Archive</a>
+    </div>
+  </section>
+</main>
+{% endblock %}

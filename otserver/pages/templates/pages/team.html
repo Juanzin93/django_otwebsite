@@ -1,0 +1,86 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block title %}Team — Staff{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">TEAM</h3>
+
+    {% if not has_staff %}
+      <p class="muted">No staff listed yet.</p>
+    {% endif %}
+
+    {% if admins %}
+    <div class="team__block">
+      <h4 class="team__heading">Administrators (ADM)</h4>
+      <ul class="team__list">
+        {% for p in admins %}
+        <li class="team__card">
+          <div class="team__left">
+            <img class="team__outfit" src="{% outfit_url p 'latest_walk' True 3 %}" width="64" height="64" alt="{{ p.name }}">
+          </div>
+          <div class="team__mid">
+            <div class="team__name">
+              {{ p.name }}
+              {% if a.country %}
+                <img class="flag" src="{% static 'assets/img/flags/' %}{{ p.country|lower }}.gif" width="18" height="14" alt="{{ p.country }}">
+              {% endif %}
+            </div>
+            <div class="team__meta">
+              <span class="badge">{{ p.vocation|vocation_name }}</span>
+              <span class="badge">Level {{ p.level }}</span>
+              <span class="badge ok">ADM</span>
+              <span class="status {% if p.online %}ok{% else %}muted{% endif %}">
+                {% if p.online %}Online{% else %}Offline{% endif %}
+              </span>
+            </div>
+            <div class="team__times">
+              <small>Last Login: {{ p.lastlogin|unixdatetime }}</small>
+              <small>Last Logout: {{ p.lastlogout|unixdatetime }}</small>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if gms %}
+    <div class="team__block">
+      <h4 class="team__heading">Gamemasters (GM)</h4>
+      <ul class="team__list">
+        {% for p in gms %}
+        <li class="team__card">
+          <div class="team__left">
+            <img class="team__outfit" src="{% outfit_url p 'latest_walk' True 3 %}" width="64" height="64" alt="{{ p.name }}">
+          </div>
+          <div class="team__mid">
+            <div class="team__name">
+              {{ p.name }}
+              {% if a.country %}
+                <img class="flag" src="{% static 'assets/img/flags/' %}{{ p.country|lower }}.gif" width="18" height="14" alt="{{ p.country }}">
+              {% endif %}
+            </div>
+            <div class="team__meta">
+              <span class="badge">{{ p.vocation|vocation_name }}</span>
+              <span class="badge">Level {{ p.level }}</span>
+              <span class="badge muted">GM</span>
+              <span class="status {% if p.online %}ok{% else %}muted{% endif %}">
+                {% if p.online %}Online{% else %}Offline{% endif %}
+              </span>
+            </div>
+            <div class="team__times">
+              <small>Last Login: {{ p.lastlogin|unixdatetime }}</small>
+              <small>Last Logout: {{ p.lastlogout|unixdatetime }}</small>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

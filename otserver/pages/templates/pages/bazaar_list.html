@@ -1,0 +1,128 @@
+{% extends "pages/index.html" %}{% load static ot_extras %}
+{% block title %}Character Bazaar{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">CHARACTER BAZAAR</h3>
+
+    <form class="filters-inline" method="get">
+      <label>Vocation:
+        <select name="vocation">
+          <option value="all" {% if selected.vocation == 'all' %}selected{% endif %}>All</option>
+          <option value="1" {% if selected.vocation == '1' %}selected{% endif %}>Sorcerer</option>
+          <option value="2" {% if selected.vocation == '2' %}selected{% endif %}>Druid</option>
+          <option value="3" {% if selected.vocation == '3' %}selected{% endif %}>Paladin</option>
+          <option value="4" {% if selected.vocation == '4' %}selected{% endif %}>Knight</option>
+        </select>
+      </label>
+
+      <label>Level:
+        <input name="minlvl" value="{{ selected.minlvl }}" size="3"> –
+        <input name="maxlvl" value="{{ selected.maxlvl }}" size="3">
+      </label>
+
+      {% with sel=selected.order|default:'' %}
+      <label>Order:
+        <select name="order">
+          <option value="ending" {% if sel == 'ending' %}selected{% endif %}>Ending Soon</option>
+          <option value="level"  {% if sel == 'level' %}selected{% endif %}>Highest Level</option>
+          <option value="price"  {% if sel == 'price' %}selected{% endif %}>Lowest Price</option>
+        </select>
+      </label>
+      {% endwith %}
+
+      <button class="btn btn--gold">Apply</button>
+      <a class="btn btn--ghost" href="{% url 'bazaar_list' %}">Reset</a>
+      <a class="btn btn--blue" href="{% url 'bazaar_sell' %}">Sell a Character</a>
+    </form>
+
+    {% if offers %}
+    <div class="baz-list">
+      {% for o in offers %}
+      <article class="baz-card">
+        <!-- Header -->
+        <header class="baz-card__head">
+          <a class="baz-card__name" href="{% url 'bazaar_offer' offer_id=o.id %}">{{ o.player_name }}</a>
+          <span class="baz-card__meta">
+            Level {{ o.level }} | {{ o.vocation|vocation_name }} |
+            {% if o.sex == 1 %}Male{% elif o.sex == 0 %}Female{% else %}—{% endif %}
+            {% if SITE_WORLD_NAME %}| World: <span class="baz-card__world">{{ SITE_WORLD_NAME }}</span>{% endif %}
+          </span>
+          <a class="baz-card__view" href="{% url 'bazaar_offer' offer_id=o.id %}" aria-label="View offer"></a>
+        </header>
+
+        <!-- Body: LEFT / CENTER / RIGHT -->
+        <div class="baz-card__body">
+          <!-- LEFT: outfit + equipment -->
+          <div class="baz-card__left">
+            <img class="baz-outfit"
+                 src="{% outfit_url o 'latest_walk' True 3 %}"
+                 width="64" height="64" alt="{{ o.player_name }}">
+
+            <div class="baz-equip" data-eq='{{ o.equipment_json|default:"[]"|escapejs }}'>
+              <!-- Row 1 -->
+              <div class="eq-slot eq-head" data-slot="1"  title="Head"></div>
+              <div class="eq-slot eq-neck" data-slot="2"  title="Amulet"></div>
+              <div class="eq-slot eq-back" data-slot="3"  title="Backpack"></div>
+              <!-- Row 2 -->
+              <div class="eq-slot eq-right" data-slot="5" title="Right Hand"></div>
+              <div class="eq-slot eq-armor" data-slot="4" title="Armor"></div>
+              <div class="eq-slot eq-left"  data-slot="6" title="Left Hand"></div>
+              <!-- Row 3 -->
+              <div class="eq-slot eq-legs" data-slot="7" title="Legs"></div>
+              <div class="eq-slot eq-ring" data-slot="9" title="Ring"></div>
+              <div class="eq-slot eq-ammo" data-slot="10" title="Ammo"></div>
+              <!-- Row 4 (center) -->
+              <div class="eq-slot eq-feet" data-slot="8" title="Feet"></div>
+            </div>
+          </div>
+
+          <!-- CENTER: times + bid summary -->
+          <div class="baz-card__center">
+            <dl class="kv kv--thin">
+              <div><dt>Auction Start:</dt><dd>{{ o.start_time|unixdatetime }}</dd></div>
+              <div><dt>Auction End:</dt>
+                <dd><span class="baz-countdown" data-end="{{ o.end_time }}"></span></dd>
+              </div>
+              <div><dt>Minimum Bid:</dt>
+                <dd><b>{{ o.min_bid|default:0 }}</b> <span class="coin"></span></dd>
+              <div><dt>Current Bid:</dt>
+                <dd><b>{{ o.current_bid|default:o.min_bid|default:0 }}</b> <span class="coin"></span></dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- RIGHT: bid box -->
+          <div class="baz-card__right">
+            <form method="post" action="{% url 'bazaar_bid' offer_id=o.id %}">
+              {% csrf_token %}
+              <label class="baz-bid__label">My Bid Limit</label>
+              <input class="baz-bid__input" type="number" min="1" name="max_bid" required>
+              <button class="btn btn--green baz-bid__btn" type="submit">Bid On Auction</button>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="muted">No active auctions.</p>
+    {% endif %}
+
+    {% if page_meta.total_pages > 1 %}
+    <nav class="pager">
+      {% if page_meta.has_prev %}
+        <a class="link" href="?{{ querystring }}&page=1">« First</a>
+        <a class="link" href="?{{ querystring }}&page={{ page_meta.page|add:-1 }}">‹ Prev</a>
+      {% endif %}
+      <span class="muted">Page {{ page_meta.page }} / {{ page_meta.total_pages }}</span>
+      {% if page_meta.has_next %}
+        <a class="link" href="?{{ querystring }}&page={{ page_meta.page|add:1 }}">Next ›</a>
+        <a class="link" href="?{{ querystring }}&page={{ page_meta.total_pages }}">Last »</a>
+      {% endif %}
+    </nav>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

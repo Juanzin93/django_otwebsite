@@ -1,0 +1,4 @@
+/* pages/components-houses.css */
+.filters-inline { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:10px 0 14px; }
+.filters-inline input[type="text"] { height:30px; padding:0 8px; border:1px solid #4c4133; border-radius:6px; background:#1f1a14; color:#e8d9b3; }
+.filters-inline select { height:30px; border:1px solid #4c4133; border-radius:6px; background:#1f1a14; color:#e8d9b3; }

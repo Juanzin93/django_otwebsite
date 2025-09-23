@@ -1,0 +1,19 @@
+{% extends "pages/index.html" %}
+{% block title %}Delete {{ char.name }}{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">DELETE CHARACTER</h3>
+    <p>Are you sure you want to <b>delete {{ char.name }}</b>? This action will mark the character as deleted.</p>
+
+    <form method="post" onsubmit="return confirm('Really delete {{ char.name }}?');">
+      {% csrf_token %}
+      <div class="login__actions">
+        <button class="btn btn--blue" type="submit">Yes, delete</button>
+        <a class="btn btn--gold" href="{{ back_url }}">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

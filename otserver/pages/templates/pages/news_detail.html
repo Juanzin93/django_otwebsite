@@ -1,0 +1,33 @@
+{% extends "pages/index.html" %}
+{% block title %}{{ post.title }} — News{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">{{ post.title }}</h3>
+    <p class="muted" style="margin:6px 0 14px;">Published {{ post.published_at|date:"Y-m-d H:i" }}</p>
+
+    {% if post.summary %}
+      <p><em>{{ post.summary|safe }}</em></p>
+    {% endif %}
+    <div class="article-body">
+      {{ post.body|safe|linebreaks }}
+    </div>
+
+    <div class="hr" style="margin:16px 0;"></div>
+
+    <h4 class="char__sub">Recent</h4>
+    <ul class="arch-latest-list">
+      {% for n in recent %}
+        <li><a href="{% url 'news_detail' slug=n.slug %}">{{ n.title }}</a>
+          <small class="muted">— {{ n.published_at|date:"Y-m-d" }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div style="margin-top:12px;">
+      <a class="btn btn--ghost" href="{% url 'news_list' %}">← All News</a>
+      <a class="btn btn--ghost" href="{% url 'news_archive' %}" style="margin-left:6px;">Archive</a>
+    </div>
+  </section>
+</main>
+{% endblock %}

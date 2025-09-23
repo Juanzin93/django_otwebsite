@@ -1,0 +1,34 @@
+{% extends "pages/index.html" %}
+{% load static %}
+
+{% block title %}Edit {{ char.name }}{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">EDIT CHARACTER</h3>
+    <div class="login">
+      <form method="post">
+        {% csrf_token %}
+
+        <p><b>{{ char.name }}</b></p>
+
+        <label for="id_comment">Comment</label>
+        <textarea id="id_comment" name="comment" rows="3" class="input" placeholder="Write a note about this character…">{{ char.comment }}</textarea>
+
+        <div style="margin:10px 0">
+          <label style="display:flex; gap:8px; align-items:center;">
+            <input type="checkbox" name="hidden" {% if char.hidden %}checked{% endif %}>
+            
+          </label>
+        </div>
+
+        <div class="login__actions">
+          <button class="btn btn--blue" type="submit">Save</button>
+          <a class="btn btn--gold" href="{{ back_url }}">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+{% endblock %}

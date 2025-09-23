@@ -1,0 +1,131 @@
+{% extends "pages/index.html" %}
+{% load static %}
+
+{% block title %}Commands & Rules{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">COMMANDS</h3>
+    <p class="muted">Below is a list of common in-game commands. Commands may change during balance updates.</p>
+
+    <!-- COMMANDS -->
+    <section id="commands" class="cmds">
+      <h4 class="section__title">In-Game Commands</h4>
+      <p class="muted">Type these in the default chat. Some commands require conditions (party lead, house ownership, etc.).</p>
+
+      <!-- General -->
+      <h5 class="cmds__group">General</h5>
+      <table class="table table--tight">
+        <thead>
+          <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>!online</code></td>
+            <td>Shows who is online / online count.</td>
+            <td><code>!online</code></td>
+          </tr>
+          <tr>
+            <td><code>!serverinfo</code></td>
+            <td>Displays basic server information.</td>
+            <td><code>!serverinfo</code></td>
+          </tr>
+          <tr>
+            <td><code>!kills</code></td>
+            <td>Shows recent kills on the server.</td>
+            <td><code>!kills</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Social / Party -->
+      <h5 class="cmds__group">Social / Party</h5>
+      <table class="table table--tight">
+        <thead>
+          <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>!share</code></td>
+            <td>Toggles party shared experience (party leader only).</td>
+            <td><code>!share</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Housing -->
+      <h5 class="cmds__group">Housing</h5>
+      <table class="table table--tight">
+        <thead>
+          <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>!buyhouse</code></td>
+            <td>Buys the house you’re standing in (if for sale).</td>
+            <td><code>!buyhouse</code></td>
+          </tr>
+          <tr>
+            <td><code>!sellhouse &lt;PlayerName&gt;</code></td>
+            <td>Sells your house to a specific player.</td>
+            <td><code>!sellhouse Knight Bob</code></td>
+          </tr>
+          <tr>
+            <td><code>!leavehouse</code></td>
+            <td>Abandons your current house.</td>
+            <td><code>!leavehouse</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Rankings / Utilities -->
+      <h5 class="cmds__group">Rankings & Utilities</h5>
+      <table class="table table--tight">
+        <thead>
+          <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>!exprank</code></td>
+            <td>Shows the experience ranking list.</td>
+            <td><code>!exprank</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Items / Cosmetics -->
+      <h5 class="cmds__group">Items & Cosmetics</h5>
+      <table class="table table--tight">
+        <thead>
+          <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>!addondoll &lt;option&gt;</code></td>
+            <td>Uses an addon doll (options depend on your script configuration).</td>
+            <td><code>!addondoll citizen second</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Staff / Admin -->
+      <h5 class="cmds__group">Staff</h5>
+      <table class="table table--tight">
+        <thead>
+          <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>!broadcast &lt;message&gt;</code></td>
+            <td>Sends a global broadcast message.</td>
+            <td><code>!broadcast selling rare items.</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </section>
+  </section>
+</main>
+{% endblock %}

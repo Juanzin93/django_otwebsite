@@ -1,0 +1,30 @@
+/* TinyMCE 4 UI elements live in the parent page */
+@media (prefers-color-scheme: dark) {
+  /* Panels, toolbars, menus */
+  .mce-panel, .mce-menubar, .mce-toolbar, .mce-menu, .mce-window, .mce-foot, .mce-statusbar {
+    background: #0f172a !important;      /* slate-900 */
+    border-color: #1f2937 !important;     /* slate-800 */
+    color: #e5e7eb !important;
+  }
+  .mce-menubtn button, .mce-btn button, .mce-ico {
+    color: #e5e7eb !important;
+  }
+  .mce-btn, .mce-menubtn, .mce-listbox {
+    background: #111827 !important;       /* gray-900 */
+    border-color: #1f2937 !important;
+  }
+  .mce-btn:hover, .mce-menubtn:hover, .mce-listbox:hover {
+    background: #1f2937 !important;       /* slate-800 */
+  }
+  .mce-active, .mce-active button {
+    background: #2563eb !important;       /* blue-600 */
+    color: #ffffff !important;
+  }
+  .mce-menu-item-normal.mce-active, .mce-menu-item-hover {
+    background: #1f2937 !important;
+    color: #e5e7eb !important;
+  }
+  .mce-path, .mce-path-item, .mce-wordcount {
+    color: #94a3b8 !important;            /* slate-400 */
+  }
+}

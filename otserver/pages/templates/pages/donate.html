@@ -1,0 +1,155 @@
+{% extends "pages/index.html" %}
+{% load static %}
+{% block title %}Donate / Buy Coins{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment store store--classic">
+    <h2 class="store-title">Stripe Offers</h2>
+
+    <form class="store-filters" method="get">
+      <label>Currency:
+        <select name="currency" onchange="this.form.submit()">
+          {% with cur=request.GET.currency|default:'USD' %}
+          <option value="USD" {% if cur == 'USD' %}selected{% endif %}>USD</option>
+          <option value="BRL" {% if cur == 'BRL' %}selected{% endif %}>BRL (PIX)</option>
+          {% endwith %}
+        </select>
+      </label>
+      <noscript><button class="btn btn--gold">Apply</button></noscript>
+    </form>
+
+    <div class="packs packs--classic">
+      {% for pk in packs %}
+      <article class="pack pack--classic">
+        <header class="pack__head">
+          <div class="pack__coins">
+            <strong>{{ pk.coins }}</strong> Coins
+          </div>
+          <div class="pack__price">
+            {% if currency == 'BRL' and pk.price_brl %}R$ {{ pk.price_brl }}{% else %}$ {{ pk.price_usd }}{% endif %}
+          </div>
+        </header>
+
+        <footer class="pack__pay">
+          {% csrf_token %}
+          <button class="btn btn--checkout pay-stripe"
+                  data-pack="{{ pk.id }}"
+                  data-cur="{{ currency|default:'USD' }}">Checkout</button>
+
+          {% if PAYPAL_CLIENT_ID %}
+            <div class="paypal-wrap" data-pack="{{ pk.id }}"
+                 data-amount="{% if currency == 'BRL' %}{{ pk.price_brl_paypal|default:pk.price_usd }}{% else %}{{ pk.price_usd }}{% endif %}"
+                 data-currency="{{ currency|default:'USD' }}">
+              <div id="paypal-btn-{{ pk.id }}"></div>
+            </div>
+          {% endif %}
+
+          {% if currency == 'BRL' %}
+            {% if STRIPE_PIX_ENABLED %}
+              <small class="muted center">PIX available after clicking “Checkout”.</small>
+            {% elif PIX_KEY %}
+              <details class="pix">
+                <summary>Pay with PIX</summary>
+                <div class="pix__box">
+                  {% if PIX_QR_IMAGE %}<img class="pix__qr" src="{{ PIX_QR_IMAGE }}" alt="PIX QR">{% endif %}
+                  <div class="pix__text">
+                    <div><b>PIX Key:</b> <code>{{ PIX_KEY }}</code></div>
+                    <div><b>Amount:</b> R$ {{ pk.price_brl }}</div>
+                    <div class="muted">After paying, paste your transaction ID on your profile.</div>
+                  </div>
+                </div>
+              </details>
+            {% endif %}
+          {% endif %}
+        </footer>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="powered">
+      <a class="powered__stripe" href="https://stripe.com" target="_blank" rel="noopener">Powered by <b>stripe</b></a>
+    </div>
+
+    <div class="store-meta">
+        {% if request.user.is_authenticated %}
+            <div>Account number: <b>{{ acc_id }}</b></div>
+            <div>Account email: <b>retrowarot@gmail.com</b></div>
+        {% endif %}
+    </div>
+
+    <div class="rules">
+      <h3>Rules:</h3>
+      <ul>
+        <li>If you are under 18 years old you need your parents’ permission.</li>
+        <li>Do not donate with money that does not belong to you.</li>
+        <li>We do not sell items or points; this is a donation.</li>
+        <li>If you lose any donation items you will not get them back.</li>
+        <li>We may modify any donation items and prices at any time.</li>
+        <li>We may reset the server at any time.</li>
+        <li>We may change terms and agreements at any time.</li>
+        <li>No refunds on payments/donations.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+{% if STRIPE_PUBLIC_KEY %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+  function getCsrf(){ const el=document.querySelector('input[name=csrfmiddlewaretoken]'); return el?el.value:''; }
+
+  document.querySelectorAll('.pay-stripe').forEach(btn=>{
+    btn.addEventListener('click', async () => {
+      const pack = btn.dataset.pack;
+      const currency = btn.dataset.cur || 'USD';
+      btn.disabled = true;
+      try{
+        const r = await fetch("{% url 'store_create_checkout' %}", {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json', 'X-CSRFToken': getCsrf() },
+          body: JSON.stringify({ pack, currency })
+        });
+        const data = await r.json();
+        if(!r.ok){ alert(data.error || 'Failed to create checkout session'); btn.disabled=false; return; }
+        await stripe.redirectToCheckout({ sessionId: data.id });
+      }catch(e){ console.error(e); alert('Stripe error.'); btn.disabled=false; }
+    });
+  });
+</script>
+{% endif %}
+
+{% if PAYPAL_CLIENT_ID %}
+<script src="https://www.paypal.com/sdk/js?client-id={{ PAYPAL_CLIENT_ID }}&currency={{ currency|default:'USD' }}"></script>
+<script>
+  function getCsrf(){ const el=document.querySelector('input[name=csrfmiddlewaretoken]'); return el?el.value:''; }
+
+  document.querySelectorAll('.paypal-wrap').forEach(wrap=>{
+    const pack = wrap.dataset.pack;
+    const amount = wrap.dataset.amount;
+    const currency = wrap.dataset.currency || 'USD';
+    paypal.Buttons({
+      style: { layout: 'horizontal', height: 36, tagline: false, label: 'paypal' },
+      createOrder: function(data, actions){
+        return fetch("{% url 'store_paypal_create' %}", {
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+          body: JSON.stringify({ pack, amount, currency })
+        }).then(res=>res.json()).then(data=>data.id);
+      },
+      onApprove: function(data, actions){
+        return fetch("{% url 'store_paypal_capture' %}", {
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+          body: JSON.stringify({ orderID: data.orderID })
+        }).then(res=>res.json()).then(data=>{
+          if(data.ok){ window.location = "{% url 'store_success' %}"; }
+          else { alert(data.error || 'PayPal capture failed'); }
+        });
+      }
+    }).render('#paypal-btn-'+pack);
+  });
+</script>
+{% endif %}
+{% endblock %}

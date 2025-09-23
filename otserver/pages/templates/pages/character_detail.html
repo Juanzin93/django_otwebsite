@@ -1,0 +1,157 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block title %}{{ p.name }} — Character{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment char">
+    <h3 class="panel__title">CHARACTER</h3>
+
+    <div class="char__header">
+      <div class="char__outfit">
+        <img src="{% outfit_url p 'latest_walk' True 3 %}" width="96" height="96" alt="{{ p.name }}" />
+      </div>
+
+      <div class="char__title">
+        <h1 class="char__name">
+          {{ p.name }}
+          {% if p.country %}
+            <img class="flag" src="{% static 'assets/img/flags/' %}{{ p.country|lower }}.gif" width="18" height="14" alt="{{ p.country }}">
+          {% endif %}
+        </h1>
+        <div class="char__meta">
+          <span class="badge">{{ p.vocation|vocation_name }}</span>
+          <span class="badge">Level {{ p.level }}</span>
+          <span class="badge {% if online %}ok{% else %}muted{% endif %}">
+            {% if online %}Online{% else %}Offline{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="char__grid">
+      <!-- Facts -->
+      <div class="char__facts panel--inner">
+        <h4 class="char__sub">Character Info</h4>
+        <ul class="kv">
+          <li><span>Sex:</span> <b>{% if p.sex == 1 %}Male{% elif p.sex == 0 %}Female{% else %}Unknown{% endif %}</b></li>
+          <li><span>Residence:</span> <b>{{ p.town_id|town_name }}</b></li>
+          <li><span>Last Login:</span> <b>{{ p.lastlogin|unixdatetime }}</b></li>
+          <li><span>Last Logout:</span> <b>{{ p.lastlogout|unixdatetime }}</b></li>
+          <li><span>Created:</span> <b>{{ p.created|unixdate }}</b></li>
+          <li><span>Account:</span> <b>{% if p.premdays|default:0 > 0 %}Premium ({{ p.premdays }} days){% else %}Free{% endif %}</b></li>
+          {% if guild %}
+          <li><span>Guild:</span> <b>{{ guild.guild_name }}</b> <small>({{ guild.rank_name }})</small></li>
+          {% endif %}
+          <li><span>Balance:</span> <b>{{ p.balance|default:0 }}</b></li>
+          <li><span>Frags/Skull:</span> <b>{{ p.skull|default:0 }}</b></li>
+          <li><span>Comments:</span> <b>{{ p.comment|default:"" }}</b></li>
+        </ul>
+      </div>
+
+    <div class="char__equip panel--inner">
+        <h4 class="char__sub">Inventory</h4>
+
+        <script>window.STATIC_URL = "{{ STATIC_URL|default:'/static/' }}";</script>
+
+        <div id="equip-inline" class="equip-inline" data-name="{{ p.name }}">
+            <div class="equip__grid equip--myaac">
+            <!-- Row 1 -->
+            <div class="slot slot--head"     data-slot="1"  title="Head"></div>
+            <div class="slot slot--neck"     data-slot="2"  title="Amulet"></div>
+            <div class="slot slot--backpack" data-slot="3"  title="Backpack"></div>
+
+            <!-- Row 2 -->
+            <div class="slot slot--rhand"    data-slot="5"  title="Handright"></div>
+            <div class="slot slot--armor"    data-slot="4"  title="Armor"></div>
+            <div class="slot slot--lhand"    data-slot="6"  title="Handleft"></div>
+
+            <!-- Row 3 -->
+            <div class="slot slot--legs"     data-slot="7"  title="Legs"></div>
+            <div class="slot slot--ring"     data-slot="9"  title="Ring"></div>
+            <div class="slot slot--ammo"     data-slot="10" title="Ammo"></div>
+
+            <!-- Row 4 (center) -->
+            <div class="slot slot--feet"     data-slot="8"  title="Boots"></div>
+            </div>
+        </div>
+    </div>
+
+   
+      <!-- Skills -->
+      <div class="char__skills panel--inner">
+        <h4 class="char__sub">Skills</h4>
+        <div class="skills">
+          {% for s in skills %}
+            <div class="skill">
+              <div class="skill__label">{{ s.label }}</div>
+              <div class="skill__bar">
+                <div class="skill__fill" style="width: {{ s.value|default:0|add:0 }}%"></div>
+              </div>
+              <div class="skill__val">{{ s.value|default:0 }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <br>
+
+    <!-- Deaths -->
+    <div class="char__deaths panel--inner">
+      <h4 class="char__sub">Recent Deaths</h4>
+      {% if deaths %}
+        <table class="table deaths">
+          <thead><tr><th>Date</th><th>Level</th><th>Killed By</th></tr></thead>
+          <tbody>
+            {% for d in deaths %}
+              <tr>
+                <td>{{ d.time|unixdatetime }}</td>
+                <td>{{ d.level }}</td>
+                <td>{{ d.killed_by }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="muted">No recent deaths.</p>
+      {% endif %}
+    </div>
+    <br>
+<!-- Account Characters -->
+<div class="char__account panel--inner">
+  <h4 class="char__sub">Account Characters</h4>
+  {% if account_chars %}
+    <ul class="charlist">
+      {% for c in account_chars %}
+        <li class="charlist__item {% if c.name == p.name %}is-current{% endif %}">
+          <a class="charlink" href="{% url 'character_detail' name=c.name %}">
+            <span class="charlink__left">
+                <span class="nm">{{ c.name }}</span>
+                <small class="meta">Lv {{ c.level }} · {{ c.vocation|vocation_name }}</small>
+            </span>
+            <span class="status {% if c.online %}ok{% else %}muted{% endif %}">
+                {% if c.online %}Online{% else %}Offline{% endif %}
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No other characters on this account.</p>
+  {% endif %}
+</div>
+    <br>
+
+<!-- Search Character -->
+<div class="char__search panel--inner">
+  <h4 class="char__sub">Search Character</h4>
+  <form method="get" action="{% url 'search_character' %}" class="charsearch">
+    <input class="charsearch__input" type="text" name="q" placeholder="Type a name…" />
+    <button class="btn btn--gold searchbox__btn" type="submit">Search</button>
+  </form>
+</div>
+  </section>
+
+</main>
+{% endblock %}

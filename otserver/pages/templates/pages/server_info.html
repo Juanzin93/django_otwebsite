@@ -1,0 +1,58 @@
+{% extends "pages/index.html" %}
+{% load static %}
+
+{% block title %}Server Info{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment" id="server-info" data-endpoint="{% url 'server_status' %}">
+    <h3 class="panel__title">SERVER INFO</h3>
+
+    <div class="servergrid">
+      <div class="box">
+        <h4 class="box__title">Status</h4>
+        <ul class="kv">
+          <li><span>Status:</span>
+            <b class="js-status">
+              {% if status.online %}<span class="ok">ONLINE</span>{% else %}<span class="bad">OFFLINE</span>{% endif %}
+            </b>
+          </li>
+          <li><span>Uptime:</span> <b class="js-uptime">{{ uptime_human }}</b></li>
+          <li><span>Players:</span> <b class="js-players">{{ status.players.online|default:'0' }}/{{ status.players.max|default:'0' }}</b></li>
+          <li><span>Record:</span> <b class="js-peak">{{ status.players.peak|default:'0' }}</b></li>
+        </ul>
+      </div>
+
+      <div class="box">
+        <h4 class="box__title">Rates</h4>
+        <ul class="kv">
+          <li><span>Experience:</span> <b class="js-rate-exp">{{ status.rates.experience|default:'-' }}</b></li>
+          <li><span>Magic:</span> <b class="js-rate-magic">{{ status.rates.magic|default:'-' }}</b></li>
+          <li><span>Skills:</span> <b class="js-rate-skill">{{ status.rates.skill|default:'-' }}</b></li>
+          <li><span>Loot:</span> <b class="js-rate-loot">{{ status.rates.loot|default:'-' }}</b></li>
+          <li><span>Spawn:</span> <b class="js-rate-spawn">{{ status.rates.spawn|default:'-' }}</b></li>
+        </ul>
+      </div>
+
+      <div class="box">
+        <h4 class="box__title">Map</h4>
+        <ul class="kv">
+          <li><span>Name:</span> <b class="js-map-name">{{ status.map.name|default:'-' }}</b></li>
+          <li><span>Author:</span> <b class="js-map-author">{{ status.map.author|default:'-' }}</b></li>
+          <li><span>Size:</span> <b class="js-map-size">{{ status.map.width|default:'0' }}×{{ status.map.height|default:'0' }}</b></li>
+        </ul>
+      </div>
+
+      <div class="box box--wide">
+        <h4 class="box__title">MOTD</h4>
+        <div class="motd js-motd">{{ status.motd|default:"Welcome!" }}</div>
+      </div>
+    </div>
+
+    <div class="updated js-updated">Last updated just now</div>
+  </section>
+</main>
+
+<link rel="stylesheet" href="{% static 'assets/css/components-serverinfo.css' %}">
+<script src="{% static 'assets/js/server_info.js' %}" defer></script>
+{% endblock %}

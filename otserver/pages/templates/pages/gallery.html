@@ -1,0 +1,38 @@
+
+{% extends "pages/index.html" %}
+{% load static %}
+{% block title %}Gallery{% endblock %}
+
+{% block content %}
+
+  <section class="panel">
+      <h3 class="panel__title">GALLERY</h3>
+      <div class="gallery slider" style="--per-view:1" data-autoplay="true" data-interval="4000">
+          <div class="slider__viewport">
+          <div class="slider__track">
+          {% for photo in gallery %}
+              <a class="thumb" style="background-image:url('{% static photo %}')" aria-label="Screenshot {{ forloop.counter }}"></a>
+          {% endfor %}
+          </div>
+          </div>
+          <button class="slider__btn slider__btn--prev" aria-label="Previous">‹</button>
+          <button class="slider__btn slider__btn--next" aria-label="Next">›</button>
+          <div class="slider__dots"></div>
+      </div>
+  {% if yt_ids %}
+  <div class="gallery-videos">
+    {% for id in yt_ids %}
+      <div class="vid vid--embed">
+        <iframe
+          src="https://www.youtube.com/embed/{{ id }}"
+          title="Video {{ forloop.counter }}"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  </section>
+{% endblock %}

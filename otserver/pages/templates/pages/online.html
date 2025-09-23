@@ -1,0 +1,36 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block title %}Online Players{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment" id="online-panel" data-endpoint="{% url 'server_players' %}">
+    <h3 class="panel__title">ONLINE PLAYERS</h3>
+
+    <div class="online-meta">
+      <span class="dot dot--status"></span>
+      <span class="js-summary">Checking status…</span>
+      <span class="js-updated" style="margin-left:auto; opacity:.8; font-size:12px;">—</span>
+    </div>
+
+    <table class="table hs" id="online-table">
+      <thead>
+        <tr>
+          <th style="width:24px;">#</th>
+          <th style="width:80px;">Outfit</th>
+          <th>Name</th>
+          <th style="width:80px;">Level</th>
+          <th style="width:60px;">Flag</th>
+        </tr>
+      </thead>
+      <tbody class="js-rows">
+        <tr><td colspan="5" style="text-align:center; opacity:.8;">Loading…</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<link rel="stylesheet" href="{% static 'assets/css/components-online.css' %}">
+<script src="{% static 'assets/js/online.js' %}" defer></script>
+{% endblock %}

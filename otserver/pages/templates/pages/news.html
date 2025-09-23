@@ -1,0 +1,20 @@
+
+{% extends "pages/index.html" %}
+{% load static %}
+{% block title %}News{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'assets/css/components-news.css' %}">
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">NEWS</h3>
+    <div class="newslist__header"><div class="h-date">19.8.2025</div><div class="h-title">Hello!</div><div class="h-author">Author: Dev</div></div>
+    <div class="newslist__body"><p>MyAAC is just READY to use!</p><p>Replace this with your actual news content.</p></div>
+    <div class="newslist__header"><div class="h-date">18.8.2025</div><div class="h-title">Patch Notes 1.0.0</div><div class="h-author">Author: Team</div></div>
+    <div class="newslist__body"><ul><li>Balance tweaks and new starting gear.</li><li>Map improvements and mini-bosses added.</li><li>Various bug fixes.</li></ul></div>
+  </section>
+</main>
+{% endblock %}
+
+

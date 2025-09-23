@@ -1,0 +1,59 @@
+{% extends "pages/index.html" %}
+{% load static %}
+{% load static ot_extras %}
+{% block title %}Guilds{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">GUILDS</h3>
+
+    <form class="filters-inline" method="get" style="margin-bottom:10px">
+      <label>Order:
+        <select name="order">
+          <option value="name" {% if request.GET.order == "name" or not request.GET.order %}selected{% endif %}>Name</option>
+          <option value="members" {% if request.GET.order == "members" %}selected{% endif %}>Members</option>
+          <option value="created" {% if request.GET.order == "created" %}selected{% endif %}>Founded</option>
+        </select>
+      </label>
+      <button class="btn btn--gold">Apply</button>
+    </form>
+
+    {% if guilds %}
+    <div class="guilds-grid">
+      {% for g in guilds %}
+      <article class="guild-card">
+        <div class="guild-card__crest">
+          <!-- If you later add uploaded logos, point src there -->
+          <div class="crest">{{ g.name|slice:":2" }}</div>
+        </div>
+
+        <div class="guild-card__body">
+          <h4 class="guild-card__name">
+            <a href="{% url 'guild_detail' name=g.name %}">{{ g.name }}</a>
+          </h4>
+          <p class="guild-card__meta">
+            {% if g.leader %}<b>Leader:</b> {{ g.leader }} · {% endif %}
+            <b>Members:</b> {{ g.members }}
+            {% if g.created %} · <b>Founded:</b> {{ g.created|format_unixtime|default:"—" }}{% endif %}
+          </p>
+          {% if g.description %}
+            <p class="guild-card__desc">{{ g.description }}</p>
+          {% elif g.motd %}
+            <p class="guild-card__desc">{{ g.motd }}</p>
+          {% endif %}
+        </div>
+
+        <div class="guild-card__actions">
+          <a class="btn btn--blue" href="{% url 'guild_detail' name=g.name %}">View</a>
+        </div>
+      </article>
+      <br>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="muted">No guilds found.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

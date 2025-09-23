@@ -1,0 +1,150 @@
+/* Filters */
+.filters-inline{
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  margin:10px 0 14px;
+}
+.filters-inline label{ font-size:14px }
+
+/* List wrapper */
+.baz-list{ display:grid; gap:10px; }
+
+/* Card shell */
+.baz-card{
+  border:1px solid #a08e64;
+  background:#d8c89f; /* parchment */
+  border-radius:8px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 rgba(0,0,0,.15);
+  overflow:hidden;
+}
+
+/* Header row */
+.baz-card__head{
+  display:flex; align-items:center; gap:10px;
+  padding:8px 12px;
+  background:#cdbb8f;
+  border-bottom:1px solid #a08e64;
+}
+.baz-card__name{ font-weight:800; color:#1a2c6a; text-decoration:none; }
+.baz-card__name:hover{ text-decoration:underline; }
+.baz-card__meta{ color:#3b331f; font-size:13px; }
+.baz-card__world{ color:#1a2c6a; font-weight:600; }
+.baz-card__view{
+  margin-left:auto; width:18px; height:18px; flex:0 0 18px;
+  background:url("../img/icons/spyglass.png") no-repeat center/contain;
+  opacity:.85;
+}
+.baz-card__view:hover{ opacity:1; }
+
+/* Body grid: LEFT / CENTER / RIGHT */
+.baz-card__body{
+  display: grid;
+  grid-template-columns: 220px 1fr 200px;  /* <-- wider first col, fixed bid col */
+  gap: 12px;
+  padding: 10px;
+  align-items: center;
+}
+
+/* Let the middle column shrink instead of pushing others to wrap */
+.baz-card__body > * { min-width: 0; }
+
+/* Keep the left block from squeezing below the grid’s needed width */
+.baz-card__left{ display:flex; gap:10px; min-width: 220px; }
+
+/* (Optional) if you want slightly smaller slots, uncomment:
+.baz-equip{
+  grid-template-columns: repeat(3, 38px);
+  grid-auto-rows: 38px;
+}
+*/
+
+/* Responsive fallback: on narrow panels stack the 3rd column below */
+@media (max-width: 760px){
+  .baz-card__body{
+    grid-template-columns: 1fr;           /* single column */
+  }
+  .baz-card__right{
+    order: 3;                              /* bid box goes last */
+  }
+}
+/* LEFT column (fixed width) */
+.baz-card__left{
+  width:160px;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns: 64px 1fr;
+  gap:10px;
+}
+.baz-outfit{
+  width:64px; height:64px; image-rendering:pixelated;
+  border:1px solid #4c4133; background:#000; border-radius:4px;
+  justify-self:center;
+}
+
+/* Equipment mini-grid */
+.baz-equip{
+  display:grid;
+  grid-template-columns: repeat(3, 42px);
+  grid-auto-rows: 42px;
+  gap:6px;
+  align-content:start;
+  justify-content:center;
+  justify-items:center;
+}
+.baz-equip .eq-feet{ grid-column: 2 / span 1; }
+
+/* slight stagger like Tibia */
+.baz-equip .eq-head, .baz-equip .eq-right, .baz-equip .eq-legs { margin-top:6px; }
+.baz-equip .eq-back, .baz-equip .eq-left,  .baz-equip .eq-ammo { margin-top:6px; }
+
+/* slot visuals */
+.eq-slot{
+  width:42px; height:42px;
+  border:1px solid #7f6b44; border-radius:4px;
+  background:#000 center / contain no-repeat;
+  image-rendering:pixelated;
+  position:relative;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.eq-slot.has-item{ outline:1px solid rgba(255,255,255,.08); }
+
+/* count bubble */
+.eq-slot .cnt{
+  position:absolute; right:-4px; bottom:-4px;
+  min-width:16px; height:16px; padding:0 4px;
+  background:#2b241b; color:#f0e5c5; border:1px solid #a58a56;
+  border-radius:9px; font:700 10px/16px Inter,system-ui,sans-serif; text-align:center;
+}
+
+/* Center column key/values */
+.kv.kv--thin{ display:grid; gap:6px; }
+.kv.kv--thin > div{ display:grid; grid-template-columns: 150px 1fr; align-items:center; }
+.kv.kv--thin dt{ color:#5a492d; font-weight:700; }
+.kv.kv--thin dd{ margin:0; color:#2a2418; }
+
+/* Right bid box */
+.baz-card__right{
+  display:flex; flex-direction:column; align-items:stretch; justify-content:center;
+  background:#e9dbb3; border:1px solid #b39a67; border-radius:6px; padding:10px;
+  width:160px;
+
+}
+.baz-bid__label{ font-size:13px; color:#3b331f; margin-bottom:6px; }
+.baz-bid__input{
+  height:34px; border:1px solid #a08e64; border-radius:6px; padding:0 10px; background:#fff8e6;
+  width: 140px;
+  margin-bottom:8px; font-weight:600;
+}
+.baz-bid__btn{
+  background:#5aa61f; border:1px solid #3f7a12; color:#0b1a03;
+  text-shadow:0 1px 0 rgba(255,255,255,.25);
+}
+.baz-bid__btn:hover{ filter:brightness(1.05); }
+
+/* Coin icon */
+.coin{
+  display:inline-block; width:14px; height:14px; vertical-align:-2px; margin-left:4px;
+  background:url("../img/icons/coin.png") no-repeat center/contain;
+}
+
+/* Countdown color */
+.baz-countdown{ font-weight:700; color:#9a1b1b; }

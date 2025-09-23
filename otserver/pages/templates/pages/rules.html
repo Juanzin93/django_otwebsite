@@ -1,0 +1,93 @@
+{% extends "pages/index.html" %}
+{% load static %}
+
+{% block title %}Rules{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">RULES</h3>
+    <p class="muted">Please read the following rules carefully. By playing on this server, you agree to abide by them.</p>
+
+    {# You can set SUPPORT_EMAIL in settings.py to show a contact email #}
+    {% load static ot_extras %}
+    {% now "Y-m-d" as now %}
+    <section id="rules" class="rules">
+      <h4 class="section__title">Server Rules</h4>
+      <p class="muted">Breaking rules can lead to mutes, jails, or bans. Ignorance is not an excuse.</p>
+
+      <ol class="rulelist">
+        <li>
+          <b>Respect & Conduct</b>
+          <ul>
+            <li>No hate speech, harassment, or threats.</li>
+            <li>No real-money trading (RMT) outside the official Bazaar/Store.</li>
+          </ul>
+        </li>
+        <li>
+          <b>Cheating & Automation</b>
+          <ul>
+            <li>No bots, macroing, or illegal software. Multi-clienting only as allowed by server policy.</li>
+            <li>No packet editing or exploiting bugs. Report bugs immediately.</li>
+          </ul>
+        </li>
+        <li>
+          <b>Names & Impersonation</b>
+          <ul>
+            <li>No offensive or misleading names.</li>
+            <li>No pretending to be staff.</li>
+          </ul>
+        </li>
+        <li>
+          <b>Chat & Advertising</b>
+          <ul>
+            <li>Use trade channels for buying/selling. Spam and flooding are not allowed.</li>
+            <li>External server ads are forbidden.</li>
+          </ul>
+        </li>
+        <li>
+          <b>Gameplay Fairness</b>
+          <ul>
+            <li>No excessive griefing (luring, blocking, trapping) beyond PvP rules.</li>
+            <li>Respect house & spawn rules; don’t abuse map design.</li>
+          </ul>
+        </li>
+        <li>
+          <b>Account Security</b>
+          <ul>
+            <li>Do not share accounts. You are responsible for your account and actions.</li>
+            <li>Enable any available security features; use a strong password.</li>
+          </ul>
+        </li>
+        <li>
+          <b>Staff & Appeals</b>
+          <ul>
+            <li>Staff decisions are final. You may appeal respectfully via support.</li>
+            <li>Ticket falsehoods or witch-hunts can result in penalties.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <div class="punishments">
+        <h5>Penalties</h5>
+        <table class="table table--tight">
+          <thead><tr><th>Offense</th><th>First</th><th>Repeat</th></tr></thead>
+          <tbody>
+            <tr><td>Spam / Chat Abuse</td><td>Warning or mute</td><td>Longer mute / temp ban</td></tr>
+            <tr><td>Botting / Cheating</td><td>Temp ban</td><td>Permanent ban</td></tr>
+            <tr><td>Hate Speech / Threats</td><td>Temp ban</td><td>Permanent ban</td></tr>
+            <tr><td>Severe Exploits</td><td>Immediate permanent ban</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="muted small">Last updated: {{ now|default:"" }}</p>
+      {% if SUPPORT_EMAIL %}
+        <p class="muted small">Need help? <a href="mailto:{{ SUPPORT_EMAIL }}">Contact support</a>.</p>
+      {% endif %}
+    </section>
+
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,75 @@
+/* Align TinyMCE with other admin fields (after the label column) */
+.aligned .form-row.field-body .mce-tinymce {
+  margin-left: 0 !important;
+  width: 100% !important;          /* container spans field width */
+}
+
+/* Only widen the outer panels, not every inner container */
+.aligned .form-row.field-body .mce-panel {
+  width: 100% !important;
+}
+
+/* Editor area should fill width */
+.aligned .form-row.field-body .mce-edit-area iframe {
+  width: 100% !important;
+}
+
+/* ---- Toolbar layout fixes (horizontal buttons) ---- */
+.aligned .form-row.field-body .mce-toolbar .mce-btn-group,
+.aligned .form-row.field-body .mce-toolbar .mce-btn,
+.aligned .form-row.field-body .mce-toolbar .mce-menubtn,
+.aligned .form-row.field-body .mce-toolbar .mce-listbox,
+.aligned .form-row.field-body .mce-toolbar .mce-ico,
+.aligned .form-row.field-body .mce-toolbar .mce-container {
+  display: inline-block !important;
+  width: auto !important;          /* undo the accidental 100% width */
+  vertical-align: top;
+}
+
+/* Keep the toolbar itself in normal inline flow */
+.aligned .form-row.field-body .mce-toolbar {
+  white-space: normal;              /* allow wrapping when viewport is narrow */
+}
+
+/* Optional: keep help text aligned with editor edge */
+.aligned .form-row.field-body .help {
+  margin-left: 0 !important;
+}
+
+/* Align TinyMCE with other admin fields (after the label column) */
+.aligned .form-row.field-summary .mce-tinymce {
+  margin-left: 0 !important;
+  width: 100% !important;          /* container spans field width */
+}
+
+/* Only widen the outer panels, not every inner container */
+.aligned .form-row.field-summary .mce-panel {
+  width: 100% !important;
+}
+
+/* Editor area should fill width */
+.aligned .form-row.field-summary .mce-edit-area iframe {
+  width: 100% !important;
+}
+
+/* ---- Toolbar layout fixes (horizontal buttons) ---- */
+.aligned .form-row.field-summary .mce-toolbar .mce-btn-group,
+.aligned .form-row.field-summary .mce-toolbar .mce-btn,
+.aligned .form-row.field-summary .mce-toolbar .mce-menubtn,
+.aligned .form-row.field-summary .mce-toolbar .mce-listbox,
+.aligned .form-row.field-summary .mce-toolbar .mce-ico,
+.aligned .form-row.field-summary .mce-toolbar .mce-container {
+  display: inline-block !important;
+  width: auto !important;          /* undo the accidental 100% width */
+  vertical-align: top;
+}
+
+/* Keep the toolbar itself in normal inline flow */
+.aligned .form-row.field-summary .mce-toolbar {
+  white-space: normal;              /* allow wrapping when viewport is narrow */
+}
+
+/* Optional: keep help text aligned with editor edge */
+.aligned .form-row.field-summary .help {
+  margin-left: 0 !important;
+}

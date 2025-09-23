@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'assets/css/base.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/layout.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-menu.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-right.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/slider.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/responsive.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-gallery.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-highscores.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-characters.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-serverinfo.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-online.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-news.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-inventory.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-account.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-bazaar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-store.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-guild.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-last_kills.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/components-team.css' %}">
+
+
+</head>
+<body>
+  <div class="bg">
+    <div class="bg__glow bg__glow--left"></div>
+    <div class="bg__glow bg__glow--right"></div>
+  </div>
+  
+  <div class="site">
+    <header class="banner">
+      <div class="logo">RETRO <span>WAR</span></div>
+      <div class="ticker">
+        <div class="ticker__label">News Ticker</div>
+        <div class="ticker__track">
+          <span class="dot"></span>
+          <div class="ticker__marquee">
+            <span>19 Aug 2025 — Welcome to Retrowar OT!</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="columns">
+      <aside class="col col--left">
+        <section class="panel acc">
+          <h3 class="panel__title">MENU</h3>
+
+          <div class="acc__item is-open">
+            <button class="acc__header" aria-expanded="true">
+              <span>News</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <div class="acc__body">
+              <ul class="menu">
+                <li><a href="{% url 'news_list' %}">Home</a></li>
+                <li><a href="{% url 'news_archive' %}">News Archive</a></li>
+                <!--<li><a href="#">Changelog</a></li>-->
+                <!--<li><a href="#">Downloads</a></li>-->
+                <li><a href="{% url 'rules' %}">Rules</a></li>
+                <!--<li><a href="#">FAQ</a></li>-->
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc__item">
+            <button class="acc__header" aria-expanded="false">
+              <span>Account</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <div class="acc__body" hidden>
+              <ul class="menu">
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'account_manage' %}">Manage Account</a></li>
+                    <li><a href="{% url 'password_change' %}">Change Password</a></li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'signup' %}">Create Account</a></li>
+                {% endif %}
+                <li><a href="{% url 'password_reset' %}">Lost Account</a></li>
+                <!--<li><a href="{% url 'search_character' %}">Forum</a></li>-->
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc__item">
+            <button class="acc__header" aria-expanded="false">
+              <span>Community</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <div class="acc__body" hidden>
+              <ul class="menu">
+                <li><a href="{% url 'search_character' %}">Search Character</a></li>
+                <li><a href="{% url 'online_list' %}">Online</a></li>
+                <li><a href="{% url 'highscores' %}">Highscores</a></li>
+                <li><a href="{% url 'last_kills' %}">Last Kills</a></li>
+                <li><a href="{% url 'houses_list' %}">Houses</a></li>
+                <!--<li><a href="#">Bug Tracker</a></li>-->
+                <li><a href="{% url 'guild_list' %}">Guilds</a></li>
+                <li><a href="{% url 'bans_list' %}">Bans</a></li>
+                <!--<li><a href="#">Forum</a></li>-->
+                <li><a href="{% url 'team' %}">Team</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc__item">
+            <button class="acc__header" aria-expanded="false">
+              <span>Library</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <div class="acc__body" hidden>
+              <ul class="menu">
+                <!--<li><a href="#">Creatures</a></li>
+                <li><a href="#">Spells</a></li>-->
+                <li><a href="{% url 'commands' %}">Commands</a></li>
+                <li><a href="{% url 'server_info' %}">Server Info</a></li>
+                <li><a href="{% url 'gallery' %}">Gallery</a></li>
+                <!--<li><a href="#">Experience Stages</a></li>
+                <li><a href="#">Experience Table</a></li>-->
+              </ul>
+            </div>
+          </div>
+          {% if SHOP_ENABLED %}
+          <div class="acc__item">
+            <button class="acc__header" aria-expanded="false">
+              <span>Shop</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <div class="acc__body" hidden>
+              <ul class="menu">
+                <li><a href="{% url 'donate' %}">Donate</a></li>
+                <!--<li><a href="#">Shop Offers</a></li>-->
+                <li><a href="{% url 'bazaar_list' %}">Char Bazaar</a></li>
+              </ul>
+            </div>
+          </div>
+            {% endif %}
+        </section>
+      </aside>
+
+      
+      {% block content %}{% endblock %}
+
+      <aside class="col col--right">
+        <section class="panel dl">
+          <a class="btn btn--dl" href="#">Download Client</a>
+          <small>Download latest client</small>
+        </section>
+        <br>
+
+        {% if QUICKLOGIN_SHOWBOX_ENABLED %}
+        <section class="panel">
+        <h3 class="panel__title">QUICK LOGIN</h3>
+
+        {% if user.is_authenticated %}
+            <p class="small">Welcome, <b>{{ user.username }}</b></p>
+            <a class="btn btn--blue" href="{% url 'account_manage' %}">Manage Account</a>
+            <a class="btn btn--blue" href="{% url 'password_change' %}">Change Password</a>
+            <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="btn btn--gold" type="submit">Logout</button>
+            </form>
+        {% else %}
+            <form class="login" method="post" action="/accounts/login/">
+            {% csrf_token %}
+            <label for="id_username">Account number</label>
+            <input id="id_username" name="username" type="text" required autocomplete="username">
+
+            <label for="id_password">Password</label>
+            <input id="id_password" name="password" type="password" required autocomplete="current-password">
+
+            <div class="login__actions">
+                <button class="btn btn--blue" type="submit">Log in</button>
+                <a class="btn btn--gold" href="{% url 'signup' %}">Register</a>
+            </div>
+
+            <small><a class="link" href="{% url 'password_reset' %}">Lost Account?</a></small>
+            </form>
+        {% endif %}
+        </section>
+        {% endif %}
+        <br>
+        {% if GALLERY_SHOWBOX_ENABLED %}
+        <section class="panel">
+            <h3 class="panel__title">GALLERY</h3>
+            <div class="gallery slider" style="--per-view:1" data-autoplay="true" data-interval="4000">
+                <div class="slider__viewport">
+                <div class="slider__track">
+                {% for photo in gallery %}
+                    <a class="thumb" style="background-image:url('{% static photo %}')" aria-label="Screenshot {{ forloop.counter }}"></a>
+                {% endfor %}
+                </div>
+                </div>
+                <button class="slider__btn slider__btn--prev" aria-label="Previous">‹</button>
+                <button class="slider__btn slider__btn--next" aria-label="Next">›</button>
+                <div class="slider__dots"></div>
+            </div>
+        </section>
+        <br>
+        {% endif %}
+        {% if SERVERINFO_SHOWBOX_ENABLED %}
+        <section class="panel" id="server-status-box" data-endpoint="{% url 'server_status' %}">
+          <h3 class="panel__title">SERVER INFO</h3>
+          <ul class="kv">
+            <li><span>Status:</span>  <b class="js-status">—</b></li>
+            <li><span>Players:</span> <b class="js-players">0</b></li>
+            <li><span>Record:</span>  <b class="js-peak">0</b></li>
+          </ul>
+          <a class="link" href="{% url 'server_info' %}">» Server Information</a>
+        </section>
+        <br>
+        {% endif %}
+        {% if CHARMARKET_SHOWBOX_ENABLED %}
+        <section class="panel">
+          <h3 class="panel__title">CHAR MARKET</h3>
+          <p class="muted">No characters for sale.</p>
+        </section>
+        <br>
+        {% endif %}
+
+        {% if POWERGAMERS_SHOWBOX_ENABLED %}
+        <section class="panel">
+          <h3 class="panel__title">POWER GAMERS</h3>
+          <ul class="kv">
+            <li><span>Developer</span> <b>0</b></li>
+            <li><span>Rook Sample</span> <b>0</b></li>
+            <li><span>Dev</span> <b>0</b></li>
+            <li><span>Hazel Hickory</span> <b>0</b></li>
+          </ul>
+        </section>
+        <br>
+        {% endif %}
+        
+        {% if ONLINERANKING_SHOWBOX_ENABLED %}
+        <section class="panel">
+          <h3 class="panel__title">MOST ONLINE</h3>
+          <ul class="kv">
+            <li><span>Developer</span> <b>0</b></li>
+            <li><span>Rook Sample</span> <b>0</b></li>
+            <li><span>Dev</span> <b>0</b></li>
+            <li><span>Hazel Hickory</span> <b>0</b></li>
+          </ul>
+        </section>
+        <br>
+        {% endif %}
+      </aside>
+    </div>
+    <footer class="footer"></footer>
+  </div>
+
+  <script src="{% static 'assets/js/accordion.js' %}" defer></script>
+  <script src="{% static 'assets/js/slider.js' %}" defer></script>
+  <script src="{% static 'assets/js/server_status.js' %}" defer></script>
+  <script src="{% static 'assets/js/navspan.js' %}" defer></script>
+  <script src="{% static 'assets/js/equip_inline.js' %}" defer></script>
+  <script src="{% static 'assets/js/bazaar-list.js' %}" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends "pages/index.html" %}
+{% block title %}News Archive{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">NEWS ARCHIVE</h3>
+
+    {% if archive %}
+      <div class="archive-grid">
+        <div class="archive-years">
+          {% for year, months in archive.items %}
+            <div class="archive-year">
+              <h4 class="arch-year__title">{{ year }}</h4>
+              <ul class="arch-months">
+                {% for m in months %}
+                  <li>
+                    <a href="{% url 'news_archive_month' year=year month=m.month %}">
+                      {{ m.month_name }} <span class="muted">({{ m.count }})</span>
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endfor %}
+        </div>
+
+        <aside class="archive-latest">
+          <h4 class="char__sub">Latest</h4>
+          <ul class="arch-latest-list">
+            {% for n in latest %}
+              <li><a href="{% url 'news_detail' slug=n.slug %}">{{ n.title }}</a>
+                <small class="muted">— {{ n.published_at|date:"Y-m-d" }}</small>
+              </li>
+            {% endfor %}
+          </ul>
+        </aside>
+      </div>
+    {% else %}
+      <p class="muted">No archived entries yet.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

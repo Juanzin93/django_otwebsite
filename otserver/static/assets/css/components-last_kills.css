@@ -1,0 +1,23 @@
+.filters-inline { display:flex; gap:10px; align-items:center; margin:10px 0 14px; flex-wrap:wrap }
+.filters-inline .ck { display:flex; gap:6px; align-items:center; }
+.charlink { color:#e7d4a2; text-decoration:none; }
+.charlink:hover { text-decoration:underline; }
+.badge.muted { opacity:.7 }
+.last_kills_rows { align-items: center; }
+/* Center all cells in your "Last Kills" rows */
+.last_kills_rows > td { 
+  text-align: center; 
+  vertical-align: middle; 
+}
+
+/* Center the table headers too (optional) */
+.table thead th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* If you want EVERY row centered, you can do this instead: */
+.table td, .table th {
+  text-align: center;
+  vertical-align: middle;
+}

@@ -1,0 +1,11 @@
+.online-meta{
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; margin-bottom:10px;
+  background:#1e1a14; border:1px solid #4c4133; border-radius:8px;
+}
+.dot{ width:10px; height:10px; border-radius:999px; background:#777; box-shadow:0 0 8px rgba(0,0,0,.4); }
+.dot.on{ background:#5dd067; box-shadow:0 0 10px #5dd067; }
+.dot.off{ background:#e35b5b; box-shadow:0 0 10px #e35b5b; }
+
+.table.hs .flag{ width:18px; height:14px; border-radius:2px; vertical-align:-2px; }
+.table.hs img{ background:#000; border:1px solid #4c4133; border-radius:6px; }

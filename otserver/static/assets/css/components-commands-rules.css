@@ -1,0 +1,18 @@
+.crumbs { margin: 8px 0 14px; color: #cfc8b3; }
+.crumbs a { color: #e7d4a2; text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+.section__title { margin: 8px 0 10px; font-weight: 800; color: #e7d4a2; }
+
+.cmds__group { margin: 12px 0 6px; font-weight: 700; color: #d5c191; }
+
+.table.table--tight th, .table.table--tight td { padding: 6px 8px; }
+
+.sep { border: 0; height: 1px; background: #3b3327; margin: 16px 0; opacity: .7; }
+
+.rulelist { margin-left: 18px; }
+.rulelist > li { margin: 8px 0; }
+.rulelist ul { margin: 6px 0 6px 16px; list-style: disc; }
+
+.punishments h5 { margin: 12px 0 6px; color: #d5c191; }
+.small { font-size: 12px; opacity: .8; }

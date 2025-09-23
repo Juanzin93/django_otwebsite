@@ -1,0 +1,90 @@
+{% extends "pages/index.html" %}
+{% block title %}Manage Account{% endblock %}
+{% load static ot_extras %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel">
+    <h3 class="panel__title">ACCOUNT OVERVIEW</h3>
+    <ul class="kv">
+      <li><span>Username:</span> <b>{{ request.user.username }}</b></li>
+      <li><span>Email:</span> <b>{{ request.user.email|default:"—" }}</b></li>
+      <li><span>Joined:</span> <b>{{ request.user.date_joined|date:"Y-m-d H:i" }}</b></li>
+      <li><span>Last login:</span> <b>{{ request.user.last_login|date:"Y-m-d H:i" }}</b></li>
+      <li><span class="wallet">Coins: </span><b>{{ acc_coins|default:"0" }}</b></li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h3 class="panel__title">SECURITY</h3>
+    <div class="login">
+      <form method="post">
+        {% csrf_token %}
+        <label for="{{ email_form.email.id_for_label }}">Change email</label>
+        {{ email_form.email }}
+        <div class="login__actions">
+          <button class="btn btn--blue" type="submit" name="update_email" value="1">Update email</button>
+          <a class="btn btn--gold" href="{% url 'password_change' %}">Change password</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel panel--parchment">
+  <h3 class="panel__title">CHARACTERS</h3>
+
+  {% if characters %}
+    <div class="charcards">
+      {% for c in characters %}
+        <div class="charcard">
+          <div class="charcard__top">
+            <!-- Simple avatar box: initials (avoids needing outfit fields here) -->
+            <div class="charcard__avatar" aria-hidden="true">
+              {{ c.name|slice:":1" }}
+            </div>
+
+            <div class="charcard__title">
+              <h4 class="charcard__name">{{ c.name }}</h4>
+              <span class="badge {% if c.online %}ok{% else %}muted{% endif %}">
+                {% if c.online %}Online{% else %}Offline{% endif %}
+              </span>
+            </div>
+          </div>
+
+          <div class="charcard__meta">
+            <span>Level {{ c.level }}</span>
+            <span>·</span>
+            <span>{{ c.vocation|vocation_name }}</span>
+          </div>
+
+          <a class="charcard__link" href="{% url 'character_detail' name=c.name %}">
+            View character »
+          </a>
+          <div class="charcard__actions" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+          <a class="btn btn--blue" href="{% url 'account_character_edit' pid=c.id %}">Edit</a>
+
+          <form method="post" action="{% url 'account_character_delete' pid=c.id %}" style="display:inline;"
+                onsubmit="return confirm('Delete {{ c.name }}?');">
+            {% csrf_token %}
+            <button class="btn btn--gold" type="submit">Delete</button>
+          </form>
+        </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No characters linked to this account yet.</p>
+  {% endif %}
+</section>
+
+
+  <section class="panel">
+    <h3 class="panel__title">SESSIONS</h3>
+    <p class="muted">If you signed in elsewhere and want to be safe, change your password. (We can also add “sign out other sessions” if you enable Django’s session management.)</p>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="btn btn--gold" type="submit">Log out</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

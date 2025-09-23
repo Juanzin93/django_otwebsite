@@ -1,0 +1,27 @@
+/* Default (light) first */
+html, body {
+  background: #ffffff;
+  color: #1f2937; /* slate-800 */
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  html, body {
+    background: #0b0f14;           /* near-black */
+    color: #e5e7eb;                /* gray-200 */
+  }
+  a { color: #93c5fd; }
+  hr { border-color: #334155; }
+  blockquote { border-left: 4px solid #334155; color: #cbd5e1; }
+  code, pre {
+    background: #111827;           /* gray-900 */
+    color: #e5e7eb;
+    border-radius: 6px;
+  }
+  table { border-color: #374151; }
+  th, td { border-color: #374151; }
+  /* Headings */
+  h1,h2,h3,h4,h5,h6 { color: #e5e7eb; }
+  /* Editor selection */
+  ::selection { background: #2563eb; color: #ffffff; }
+}

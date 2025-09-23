@@ -1,0 +1,17 @@
+{% extends "pages/index.html" %}
+{% block title %}Password reset{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel">
+    <h3 class="panel__title">PASSWORD RESET</h3>
+    <form method="post" class="login" action="{% url 'password_reset' %}">
+      {% csrf_token %}
+      <label for="id_email">Email</label>
+      {{ form.email }}  {# Django renders proper name/id; you can style with a class if needed #}
+      <div class="login__actions">
+        <button class="btn btn--blue" type="submit">Send reset link</button>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

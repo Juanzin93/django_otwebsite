@@ -1,0 +1,45 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block title %}Search Character{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">Search Character</h3>
+
+    <form method="get" class="charsearch">
+      <input
+        type="text"
+        name="q"
+        value="{{ q }}"
+        placeholder="Type a character name…"
+        class="charsearch__input"
+        autofocus>
+      <button class="btn btn--gold" type="submit">Search</button>
+    </form>
+
+    {% if q and not matches %}
+      <p class="muted">No characters found for <b>{{ q }}</b>.</p>
+    {% endif %}
+
+    {% if matches %}
+      <ul class="charlist">
+        {% for c in matches %}
+          <li class="charlist__item">
+            <div class="charlist__main">
+              <div class="charlist__name">
+                <a href="{% url 'character_detail' c.name %}">{{ c.name }}</a>
+              </div>
+              <div class="charlist__meta">
+                Level {{ c.level }} &middot; {{ c.vocation|vocation_name }}
+              </div>
+            </div>
+            <a class="btn btn--blue" href="{% url 'character_detail' c.name %}">View</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

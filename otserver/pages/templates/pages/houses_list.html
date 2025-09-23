@@ -1,0 +1,103 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block title %}Houses{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">HOUSES</h3>
+
+    <form class="filters-inline" method="get">
+      <input type="text" name="q" value="{{ selected.q }}" placeholder="Search name…" />
+      <label>Town:
+        <select name="town">
+          <option value="all" {% if selected.town == 'all' %}selected{% endif %}>All</option>
+          {% for tid in town_ids %}
+            <option value="{{ tid }}" {% if selected.town|add:0 == tid %}selected{% endif %}>
+              {{ tid|town_name }} ({{ tid }})
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Status:
+        <select name="status">
+          <option value="all"   {% if selected.status == 'all' %}selected{% endif %}>All</option>
+          <option value="empty" {% if selected.status == 'empty' %}selected{% endif %}>Empty</option>
+          <option value="owned" {% if selected.status == 'owned' %}selected{% endif %}>Owned</option>
+        </select>
+      </label>
+      <label>Size:
+        <input name="minsize" value="{{ selected.minsize }}" size="3"> –
+        <input name="maxsize" value="{{ selected.maxsize }}" size="3">
+      </label>
+      <label>Rent:
+        <input name="minrent" value="{{ selected.minrent }}" size="4"> –
+        <input name="maxrent" value="{{ selected.maxrent }}" size="4">
+      </label>
+      <label>Order:
+        <select name="order">
+          <option value="name" {% if selected.order == 'name' %}selected{% endif %}>Name</option>
+          <option value="rent" {% if selected.order == 'rent' %}selected{% endif %}>Lowest Rent</option>
+          <option value="size" {% if selected.order == 'size' %}selected{% endif %}>Largest Size</option>
+        </select>
+      </label>
+      <button class="btn btn--gold">Apply</button>
+      <a class="btn btn--ghost" href="{% url 'houses_list' %}">Reset</a>
+    </form>
+
+    {% if houses %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:36px">#</th>
+          <th style="width:220px">Name</th>
+          <th style="width:100px">Town</th>
+          <th style="width:80px">Size</th>
+          <th style="width:80px">Beds</th>
+          <th style="width:80px">Rent</th>
+          <th style="width:100px">Owner</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in houses %}
+        <tr>
+          <td>{{ forloop.counter0|add:page_meta.start_index }}</td>
+          <td>{{ h.name }}</td>
+          <td>{{ h.town_id|town_name }}</td>
+          <td style="text-align:center">{{ h.size }}</td>
+          <td style="text-align:center">{{ h.beds }}</td>
+          <td style="text-align:center">{{ h.rent }}</td>
+          <td>
+            {% if h.owner|default:0|add:0 > 0 %}
+              <a class="link" href="{% url 'character_detail' name=h.owner_name %}">{{ h.owner_name }}</a>
+            {% else %}
+              <span class="muted">Empty</span>
+            {% endif %}
+          </td>
+          <td><a class="btn btn--blue btn--sm" href="{% url 'house_detail' house_id=h.id %}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if page_meta.total_pages > 1 %}
+      <nav class="pager">
+        {% if page_meta.has_prev %}
+          <a class="link" href="?{{ querystring }}&page=1">« First</a>
+          <a class="link" href="?{{ querystring }}&page={{ page_meta.page|add:-1 }}">‹ Prev</a>
+        {% endif %}
+        <span class="muted">Page {{ page_meta.page }} / {{ page_meta.total_pages }}</span>
+        {% if page_meta.has_next %}
+          <a class="link" href="?{{ querystring }}&page={{ page_meta.page|add:1 }}">Next ›</a>
+          <a class="link" href="?{{ querystring }}&page={{ page_meta.total_pages }}">Last »</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+    {% else %}
+      <p class="muted">No houses match your filters.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

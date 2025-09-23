@@ -1,0 +1,32 @@
+{% extends "pages/index.html" %}
+{% load static %}
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel">
+    <h3 class="panel__title">LOGIN</h3>
+
+    <form class="login" method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <p class="muted" style="color:#ffaeae">{{ form.non_field_errors }}</p>
+      {% endif %}
+
+      <label for="id_username">Account number</label>
+      <input id="id_username" name="username" type="text"
+             value="{{ form.username.value|default:'' }}" required autocomplete="username">
+
+      <label for="id_password">Password</label>
+      <input id="id_password" name="password" type="password" required autocomplete="current-password">
+
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+      <div class="login__actions">
+        <button class="btn btn--blue" type="submit">Log in</button>
+        <a class="btn btn--gold" href="{% url 'password_reset' %}">Forgot?</a>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

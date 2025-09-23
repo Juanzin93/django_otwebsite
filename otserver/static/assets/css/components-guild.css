@@ -1,0 +1,42 @@
+.guilds-grid{
+  display:row;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap:12px;
+}
+
+.guild-card{
+  display:grid;
+  grid-template-columns: 60px 1fr auto;
+  gap:10px;
+  background: #efe3c2;
+  border:1px solid #b79e6e;
+  border-radius:8px;
+  padding:10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), var(--panel-shadow);
+}
+
+.guild-card__crest{display:flex;align-items:center;justify-content:center}
+.crest{
+  width:44px;height:44px;border-radius:8px;
+  background:#2b241b;color:#e8d9b3;font-weight:800;display:flex;align-items:center;justify-content:center;
+  text-transform:uppercase; letter-spacing:.5px;
+  border:1px solid #a58a56;
+}
+.crest--lg{ width:64px;height:64px; font-size:18px; border-radius:10px; }
+
+.guild-card__name{margin:0 0 4px 0}
+.guild-card__name a{ color:#1a2c6a; text-decoration:none; font-weight:800 }
+.guild-card__name a:hover{ text-decoration:underline }
+.guild-card__desc{ margin:4px 0 0 0; color:#3b331f; font-size:14px }
+.guild-card__meta{ color:#5a492d; font-size:13px }
+
+.guild-card__actions{ display:flex; align-items:center }
+
+.guild-head{
+  display:grid; grid-template-columns:80px 1fr; gap:12px; align-items:center;
+  padding:8px 10px 12px; border-bottom:1px solid #d0bc8e; margin-bottom:10px;
+}
+.guild-head__name{ margin:0 0 6px 0; }
+.kv.kv--tight li{ margin:2px 0; }
+
+.table .is-online td{ background: rgba(38, 169, 70, 0.06); }

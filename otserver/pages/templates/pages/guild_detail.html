@@ -1,0 +1,59 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+{% block title %}{{ g.name }} — Guild{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">GUILD</h3>
+
+    <header class="guild-head">
+      <div class="guild-head__crest">
+        <div class="crest crest--lg">{{ g.name|slice:":2" }}</div>
+      </div>
+      <div class="guild-head__meta">
+        <h1 class="guild-head__name">{{ g.name }}</h1>
+        <p class="muted">
+          {% if g.description %}{{ g.description }}{% elif g.motd %}{{ g.motd }}{% endif %}
+        </p>
+        <ul class="kv kv--tight">
+          <li><span>Members:</span> <b>{{ members_total }}</b></li>
+          <li><span>Online now:</span> <b>{{ online_total }}</b></li>
+          {% if g.creationdata or g.creationdate %}
+            <li><span>Founded:</span> <b>{{ g.creationdata|format_unixtime|default:"—" }}</b></li>
+          {% endif %}
+        </ul>
+      </div>
+    </header>
+
+    <div class="panel--inner">
+      {% if members %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Level</th><th>Vocation</th><th>Rank</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for m in members %}
+          <tr class="{% if m.is_online %}is-online{% endif %}">
+            <td><a href="{% url 'character_detail' name=m.name %}">{{ m.name }}</a></td>
+            <td>{{ m.level }}</td>
+            <td>{{ m.vocation|vocation_name }}</td>
+            <td>{{ m.rank_name|default:"Member" }}</td>
+            <td>
+              <span class="badge {% if m.is_online %}ok{% else %}muted{% endif %}">
+                {% if m.is_online %}Online{% else %}Offline{% endif %}
+              </span>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="muted">This guild has no members.</p>
+      {% endif %}
+    </div>
+  </section>
+</main>
+{% endblock %}

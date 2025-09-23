@@ -1,0 +1,9 @@
+Hi {{ user.username }},
+
+Welcome to Retrowar! Please confirm your email by clicking this link:
+
+{{ confirm_url }}
+
+If you didn’t create this account, you can ignore this message.
+
+— Retrowar Team

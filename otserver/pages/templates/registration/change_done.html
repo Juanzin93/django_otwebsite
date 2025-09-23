@@ -1,0 +1,12 @@
+{% extends "pages/index.html" %}
+{% block title %}Password changed{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel">
+    <h3 class="panel__title">PASSWORD CHANGED</h3>
+    <p class="muted">Your password was updated successfully.</p>
+    <a class="btn btn--blue" href="{% url 'home' %}">Return Home</a>
+  </section>
+</main>
+{% endblock %}

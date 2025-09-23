@@ -1,0 +1,84 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block title %}Last Kills{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">LAST KILLS</h3>
+
+    <form class="filters-inline" method="get">
+      <input type="text" name="q" value="{{ selected.q }}" placeholder="Search player/killer…" />
+      <label class="ck">
+        <input type="checkbox" name="unjust" value="1" {% if selected.unjust %}checked{% endif %}>
+        Unjustified only
+      </label>
+      <label class="ck">
+        <input type="checkbox" name="pvp" value="1" {% if selected.pvp %}checked{% endif %}>
+        PvP only
+      </label>
+      <button class="btn btn--gold">Apply</button>
+      <a class="link" href="{% url 'last_kills' %}">Reset</a>
+    </form>
+
+    {% if rows %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:160px;">Time</th>
+          <th style="width:160px;">Player</th>
+          <th style="width:80px;">Level</th>
+          <th style="width:160px;">Killed By</th>
+          <th style="width:160px;">Most Damage</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="last_kills_rows">
+          <td>{{ r.time|unixdatetime }}</td>
+          <td>
+            <a class="charlink" href="{% url 'character_detail' name=r.victim_name %}">
+              {{ r.victim_name }}
+            </a>
+          </td>
+          <td>{{ r.level }}</td>
+          <td>
+            {{ r.killed_by }}
+            {% if r.is_player %}
+                {% if r.unjustified or r.mostdamage_unjustified %}
+                <span class="badge ok">Unjust.</span>
+                {% else %}
+                <span class="badge muted">Justified</span>
+                {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            {{ r.mostdamage_by }}
+          </td>
+          <td>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if page_meta.total_pages > 1 %}
+    <nav class="pager">
+      {% if page_meta.has_prev %}
+        <a class="link" href="?{{ querystring }}&page=1">« First</a>
+        <a class="link" href="?{{ querystring }}&page={{ page_meta.page|add:-1 }}">‹ Prev</a>
+      {% endif %}
+      <span class="muted">Page {{ page_meta.page }} / {{ page_meta.total_pages }}</span>
+      {% if page_meta.has_next %}
+        <a class="link" href="?{{ querystring }}&page={{ page_meta.page|add:1 }}">Next ›</a>
+        <a class="link" href="?{{ querystring }}&page={{ page_meta.total_pages }}">Last »</a>
+      {% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+      <p class="muted">No kills recorded.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

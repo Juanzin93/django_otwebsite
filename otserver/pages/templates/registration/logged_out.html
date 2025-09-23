@@ -1,0 +1,12 @@
+{% extends "pages/index.html" %}
+{% block title %}Logged out{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel">
+    <h3 class="panel__title">LOGGED OUT</h3>
+    <p class="muted">You’ve been signed out.</p>
+    <a class="btn btn--blue" href="{% url 'login' %}">Log in again</a>
+    <a class="btn btn--gold" href="{% url 'home' %}">Return home</a>
+  </section>
+</main>
+{% endblock %}

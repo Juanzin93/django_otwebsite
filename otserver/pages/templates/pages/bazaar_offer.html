@@ -1,0 +1,53 @@
+{% extends "pages/index.html" %}{% load static ot_extras %}
+{% block title %}{{ o.player_name }} — Bazaar{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">AUCTION</h3>
+
+    <div class="auction">
+      <div class="auction__left">
+        <div class="who">
+          <img src="{% outfit_url o 'latest_walk' True 3 %}" width="96" height="96" alt="{{ o.player_name }}">
+          <div>
+            <h2>{{ o.player_name }}</h2>
+            <div class="meta">Lv {{ o.level }} · {{ o.vocation|vocation_name }}</div>
+          </div>
+        </div>
+
+       <div class="prices">
+        <div>Minimum bid: <b>{{ o.min_bid }}</b> <small>coins</small></div>
+        <div>Current bid: <b>{{ o.current_bid|default:o.min_bid }}</b> <small>coins</small></div>
+        {% if o.buyout %}
+          <div>Buyout: <b>{{ o.buyout }}</b> <small>coins</small></div>
+        {% endif %}
+        <div>Ends in: <span class="countdown" data-end="{{ o.end_time }}"></span></div>
+      </div>
+
+      {% if request.user.is_authenticated %}
+      <form method="post" action="{% url 'bazaar_bid' o.id %}" class="bid-form">{% csrf_token %}
+        <input type="number" name="amount" min="{{ o.current_bid|default:o.min_bid|add:1 }}" placeholder="Your bid (coins)">
+        <button class="btn btn--gold">Place Bid</button>
+        {% if o.buyout %}<button class="btn btn--blue" name="action" value="buyout" type="submit">Buyout</button>{% endif %}
+      </form>
+      {% else %}
+        <p class="muted">Log in to bid.</p>
+      {% endif %}
+
+
+        <h4 class="char__sub">Equipment / Inventory / Depot</h4>
+        {% include "partials/equipment_viewer.html" with equipment_json=o.equipment_json inventory_json=o.inventory_json depot_json=o.depot_json %}
+      </div>
+
+      <aside class="auction__right">
+        <h4 class="char__sub">Bid history</h4>
+        <ul class="bids">
+          {% for b in bids %}
+            <li><span class="amt">{{ b.amount }} gp</span> <small>{{ b.created_at|unixdatetime }}</small></li>
+          {% empty %}<li class="muted">No bids yet.</li>{% endfor %}
+        </ul>
+      </aside>
+    </div>
+  </section>
+</main>
+{% endblock %}

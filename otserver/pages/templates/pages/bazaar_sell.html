@@ -1,0 +1,45 @@
+{% extends "pages/index.html" %}{% load static ot_extras %}
+{% block title %}Sell a Character{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">LIST CHARACTER ON BAZAAR</h3>
+
+    <form method="post" class="login">
+      {% csrf_token %}
+
+      <label for="id_player">Character</label>
+      <select id="id_player" name="player_id" required>
+        <option value="">— Choose one —</option>
+        {% for c in chars %}
+          <option value="{{ c.id }}">{{ c.name }} (Lv {{ c.level }} · {{ c.vocation|vocation_name }})</option>
+        {% endfor %}
+      </select>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
+        <div>
+          <label for="id_min_bid">Minimum Bid (coins)</label>
+          <input id="id_min_bid" name="min_bid" type="number" min="1" step="1" required>
+        </div>
+        <div>
+          <label for="id_buyout">Buyout (coins)</label>
+          <input id="id_buyout" name="buyout" type="number" min="0" step="1" placeholder="Optional">
+        </div>
+        <div>
+          <label for="id_hours">Duration (hours)</label>
+          <input id="id_hours" name="hours" type="number" min="1" max="168" step="1" value="24">
+        </div>
+      </div>
+
+      <label for="id_comment" style="margin-top:10px;">Comment</label>
+      <textarea id="id_comment" name="comment" rows="3" placeholder="Optional note for buyers"></textarea>
+
+      <div class="login__actions">
+        <button class="btn btn--blue" type="submit">Create Offer</button>
+        <a class="btn btn--gold" href="{% url 'bazaar_list' %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

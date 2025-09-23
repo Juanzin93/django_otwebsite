@@ -1,0 +1,11 @@
+{% extends "pages/index.html" %}
+{% block title %}Payment Successful{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">THANK YOU</h3>
+    <p>Your payment was successful. Coins will appear on your account shortly (usually instant).</p>
+    <a class="btn btn--gold" href="{% url 'donate' %}">Back to Store</a>
+  </section>
+</main>
+{% endblock %}

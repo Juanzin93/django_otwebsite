@@ -1,0 +1,13 @@
+{% extends "pages/index.html" %}
+{% block title %}Check your email{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">VERIFY YOUR EMAIL</h3>
+    <p>We sent a confirmation link to <b>{{ email }}</b>. Please click it to activate your account.</p>
+    <p class="muted">Didn’t get it? Check your spam folder. If it’s not there, try signing up again or contact support.</p>
+    <a class="btn btn--blue" href="{% url 'login' %}">Back to login</a>
+  </section>
+</main>
+{% endblock %}

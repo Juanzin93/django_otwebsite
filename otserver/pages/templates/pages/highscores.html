@@ -1,0 +1,103 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment hs-layout">
+    
+    <!-- LEFT: Highscores Table -->
+    <div class="hs-table">
+      <h3 class="panel__title">HIGHSCORES</h3>
+      <table class="table hs">
+        <thead>
+          <tr>
+            <th style="width: 25px;">#</th>
+            <th style="width: 25px;">Rank</th>
+            <th style="width: 100px;">Outfit</th>
+            <th style="width: 250px;">Name</th>
+            {% for s in skills %}
+              {% if selected_skill == s %}
+                <th style="width: 50px;">{{ s|capfirst }}</th>
+              {% endif %}
+            {% endfor %}
+            {% if selected_skill == "level" %}
+              <th style="width: 150px;">Experience</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for p in players %}
+          <tr>
+            <td><img class="flag" src="{% static 'assets/img/flags/' %}{{ p.country|lower|default:'us' }}.gif" width="18" height="14" /></td>
+            <td><center>{{ forloop.counter0|add:start_index }}</center></td>
+            <td class="tc-outfit"><img src="{% outfit_url p 'latest_walk' True 3 %}" width="64" height="64" style="image-rendering:pixelated" /></td>
+            <td>
+              <span class="name-link" role="link" tabindex="0" data-url="{% url 'character_detail' p.name %}"> {{ p.name }} </span>
+              <br>
+              <small>{{ p.level }}</small>
+              <small>{{ p.vocation|vocation_name }}</small>
+            </td>
+            {% for s in skills %}
+              {% if selected_skill == s %}
+                <th style="width: 50px;">{{ p|skill_value:s }}</th>
+              {% endif %}
+            {% endfor %}
+            {% if selected_skill == "level" %}
+              <td><center>{{ p.experience }}</center></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      {% if total_pages > 1 %}
+      <nav class="pager">
+        {% if has_prev %}
+          <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page=1">« First</a>
+          <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page|add:-1 }}">‹ Prev</a>
+        {% endif %}
+        {% for num in page_range %}
+          {% if num == page %}
+            <span class="link is-current">{{ num }}</span>
+          {% else %}
+            <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if has_next %}
+          <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page|add:1 }}">Next ›</a>
+          <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ total_pages }}">Last »</a>
+        {% endif %}
+      </nav>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: Filters -->
+    <aside class="hs-filters">
+      <form method="get" id="hs-filters">
+        <div class="filter-box">
+          <h4>Choose a Skill</h4>
+          {% for s in skills %}
+            <a href="?skill={{ s }}&vocation={{ selected_vocation }}"
+               class="filter-link {% if selected_skill == s %}active{% endif %}">
+              {{ s|capfirst }}
+            </a>
+          {% endfor %}
+        </div>
+
+        <div class="filter-box">
+          <h4>Choose a Vocation</h4>
+          {% for v in vocations %}
+            <a href="?skill={{ selected_skill }}&vocation={{ v }}"
+               class="filter-link {% if selected_vocation == v %}active{% endif %}">
+              {{ v|upper }}
+            </a>
+          {% endfor %}
+        </div>
+
+        <a href="{% url 'highscores' %}" class="reset-link">Reset</a>
+      </form>
+    </aside>
+
+  </section>
+</main>
+{% endblock %}

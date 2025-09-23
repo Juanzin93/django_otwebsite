@@ -1,0 +1,124 @@
+/* Search box */
+.charsearch { display:flex; gap:8px; margin-bottom:14px; }
+.charsearch__input {
+  flex:1; padding:8px 10px; border:1px solid #c2a56b; border-radius:6px;
+  background:#fffdf6; color:#3a2a18; font:14px/1.2 Georgia, serif;
+}
+/* Character page */
+
+.char { padding-bottom: 16px; }
+
+/* Header */
+.char__header {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.char__outfit img {
+  width: 96px; height: 96px;
+  image-rendering: pixelated;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid #4c4133;
+}
+.char__name {
+  margin: 0;
+  font-family: Cinzel, serif;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+.char__name .flag { margin-left: 6px; border-radius: 2px; vertical-align: -2px; }
+.char__meta { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid #4c4133;
+  border-radius: 999px;
+  background: #1f1a14;
+  font-size: 12px;
+  opacity: .95;
+}
+.badge.ok { background: #20321f; border-color: #356a39; color: #cfe9d1; }
+.badge.muted { opacity: .7; }
+
+/* Grid (facts + skills) */
+.char__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 10px 0 6px;
+}
+.panel--inner {
+  background: linear-gradient(180deg,#2a241b,#1d1914);
+  border: 1px solid #3b3327;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.char__sub {
+  margin: 0 0 8px;
+  font-family: Cinzel, serif;
+  font-weight: 700;
+  color: #e7d4a2;
+  border-bottom: 1px solid #4a3c2b;
+  padding-bottom: 4px;
+}
+
+/* Key/value list (reuse your .kv style if present) */
+.kv { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.kv li { display: flex; justify-content: space-between; gap: 10px; }
+.kv li span { opacity: .85; }
+
+/* Skills */
+.skills { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.skill { display: grid; grid-template-columns: 120px 1fr 48px; align-items: center; gap: 10px; }
+.skill__label { color: #d7c297; font-weight: 600; }
+.skill__bar { background: #15110d; border: 1px solid #4c4133; border-radius: 6px; height: 10px; overflow: hidden; }
+.skill__fill { height: 100%; background: linear-gradient(90deg,#d9b869,#a87a2a); }
+
+/* Deaths table */
+.table.deaths th, .table.deaths td { padding: 6px 8px; }
+.muted { opacity: .7; }
+
+/* Responsive */
+@media (max-width: 980px) {
+  .char__grid { grid-template-columns: 1fr; }
+}
+
+
+/* Account characters list */
+.charlist { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+.charlist__item + .charlist__item { border-top: 1px solid #4c4133; }
+.charlink{
+  display:flex; 
+  gap:2px;
+  align-items: center;
+
+  padding:8px 10px; 
+  border:1px solid #4c4133; 
+  border-radius:8px;
+  justify-content: space-between; /* pushes status to the right */
+  background:#1f1a14; 
+  text-decoration:none; 
+  color:#e8d9b3;
+  transition:transform .06s ease, background .15s ease, border-color .15s ease;
+}
+.charlink:hover{ background:#2a231b; border-color:#8c6a2f; transform:translateY(-1px); }
+.charlist__item.is-current .charlink{
+  background:#3a3025; border-color:#8c6a2f; pointer-events:none;
+}
+
+.charlink__left{ display: flex; flex-direction: column; min-width: 0; }
+.status{
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:12px; padding:2px 8px; border-radius:999px;
+  background:#2a231b; border:1px solid #4c4133;
+}
+.status::before{
+  content:""; width:8px; height:8px; border-radius:50%;
+  background:#7a5; box-shadow:0 0 6px rgba(0,0,0,.4);
+}
+.status.ok::before{ background:#5dd067; }
+.status.muted::before{ background:#a05252; }

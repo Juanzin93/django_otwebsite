@@ -1,0 +1,88 @@
+{% extends "pages/index.html" %}
+{% load static ot_extras %}
+
+{% block title %}Bans{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">BANS</h3>
+
+    <form class="filters-inline" method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px;">
+      <label>Show:
+        <select name="only">
+          <option value="active" {% if selected.only == 'active' %}selected{% endif %}>Active only</option>
+          <option value="all"    {% if selected.only == 'all' %}selected{% endif %}>All</option>
+        </select>
+      </label>
+      <label>Type:
+        <select name="type">
+          <option value="all"     {% if selected.type == 'all' %}selected{% endif %}>All</option>
+          <option value="account" {% if selected.type == 'account' %}selected{% endif %}>Account</option>
+          <option value="ip"      {% if selected.type == 'ip' %}selected{% endif %}>IP</option>
+        </select>
+      </label>
+      <label>Search:
+        <input type="text" name="q" value="{{ selected.q }}" placeholder="subject or reason" />
+      </label>
+      <button class="btn btn--gold">Apply</button>
+      <a class="btn btn--ghost" href="{% url 'bans_list' %}">Reset</a>
+    </form>
+
+    {% if rows %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Subject</th>
+            <th>Reason</th>
+            <th>Issued</th>
+            <th>Expires</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td style="white-space:nowrap">{{ r.kind|capfirst }}</td>
+            <td>{{ r.subject }}</td>
+            <td>{{ r.reason|default:"—" }}</td>
+            <td>{{ r.issued_at|unixdatetime }}</td>
+            <td>
+              {% if r.expires_at %}
+                {{ r.expires_at|unixdatetime }}
+              {% else %}
+                <span class="muted">Permanent</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if r.active %}
+                <span class="badge ok">Active</span>
+              {% else %}
+                <span class="badge muted">Expired</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if meta.total_pages > 1 %}
+      <nav class="pager" style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+        {% if meta.has_prev %}
+          <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page=1">« First</a>
+          <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ meta.page|add:-1 }}">‹ Prev</a>
+        {% endif %}
+        <span class="muted">Page {{ meta.page }} / {{ meta.total_pages }}</span>
+        {% if meta.has_next %}
+          <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ meta.page|add:1 }}">Next ›</a>
+          <a class="link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ meta.total_pages }}">Last »</a>
+        {% endif %}
+      </nav>
+      {% endif %}
+    {% else %}
+      <p class="muted">No bans match your filters.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

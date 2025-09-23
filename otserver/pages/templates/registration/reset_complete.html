@@ -1,0 +1,11 @@
+{% extends "pages/index.html" %}
+{% block title %}Password reset complete{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel">
+    <h3 class="panel__title">DONE</h3>
+    <p class="muted">Your password has been set. You can now log in.</p>
+    <a class="btn btn--blue" href="{% url 'login' %}">Log in</a>
+  </section>
+</main>
+{% endblock %}

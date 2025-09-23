@@ -1,0 +1,11 @@
+{% extends "pages/index.html" %}
+{% block title %}Payment Canceled{% endblock %}
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">PAYMENT CANCELED</h3>
+    <p>No charge was made. You can try again anytime.</p>
+    <a class="btn btn--gold" href="{% url 'donate' %}">Back to Store</a>
+  </section>
+</main>
+{% endblock %}

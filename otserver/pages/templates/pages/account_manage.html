@@ -72,13 +72,13 @@
         </div>
       {% endfor %}
     </div>
-    <br>
-    <div style="margin-bottom:12px;">
-      <a class="btn btn--gold" href="{% url 'account_character_create' %}">+ New Character</a>
-    </div>
   {% else %}
     <p class="muted">No characters linked to this account yet.</p>
   {% endif %}
+  <br>
+  <div style="margin-bottom:12px;">
+    <a class="btn btn--gold" href="{% url 'account_character_create' %}">+ New Character</a>
+  </div>
 </section>
 
 

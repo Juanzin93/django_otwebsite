@@ -1,0 +1,33 @@
+{% extends "pages/index.html" %}
+{% block title %}Create Character{% endblock %}
+
+{% block content %}
+<main class="col col--center">
+  <section class="panel panel--parchment">
+    <h3 class="panel__title">CREATE CHARACTER</h3>
+
+    <form method="post" class="form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="field">
+        <label>Name</label>
+        {{ form.name }} {{ form.name.errors }}
+      </div>
+      <div class="field">
+        <label>Vocation</label>
+        {{ form.vocation }} {{ form.vocation.errors }}
+      </div>
+      <div class="field">
+        <label>Sex</label>
+        {{ form.sex }} {{ form.sex.errors }}
+      </div>
+      <div class="field">
+        <label>Town</label>
+        {{ form.town_id }} {{ form.town_id.errors }}
+      </div>
+      <button class="btn btn--gold">Create</button>
+      <a class="link" href="{% url 'account_manage' %}">Cancel</a>
+    </form>
+  </section>
+</main>
+{% endblock %}

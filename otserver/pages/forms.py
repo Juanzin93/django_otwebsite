@@ -1,7 +1,18 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
+
+VOCATION_CHOICES = [
+    (0, "None"),
+    (1, "Sorcerer"),
+    (2, "Druid"),
+    (3, "Paladin"),
+    (4, "Knight"),
+]
+
+SEX_CHOICES = [(0, "Female"), (1, "Male")]  # TFS usually: 0=female, 1=male
 
 class EmailUpdateForm(forms.ModelForm):
     class Meta:
@@ -36,3 +47,20 @@ class SignUpForm(forms.Form):
         if p1 and p2 and p1 != p2:
             self.add_error("password2", "Passwords do not match.")
         return cleaned
+    
+
+
+class CreateCharacterForm(forms.Form):
+    name = forms.CharField(max_length=30)
+    vocation = forms.TypedChoiceField(choices=VOCATION_CHOICES, coerce=int)
+    sex = forms.TypedChoiceField(choices=SEX_CHOICES, coerce=int)
+    town_id = forms.IntegerField(min_value=1, required=False)
+
+    def clean_name(self):
+        n = self.cleaned_data["name"].strip()
+        if len(n) < 3:
+            raise ValidationError("Name must be at least 3 characters.")
+        import re
+        if not re.fullmatch(r"[A-Za-z ]+", n):
+            raise ValidationError("Name may contain only letters and spaces.")
+        return n

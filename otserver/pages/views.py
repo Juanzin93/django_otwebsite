@@ -7,7 +7,7 @@ from django.core.cache import cache
 from django.http import JsonResponse, Http404, HttpResponseBadRequest
 from django.utils.html import escape
 from django.urls import reverse
-from django.contrib.auth import login
+from django.contrib.auth import get_user_model, login
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
@@ -16,17 +16,29 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import F
 from django.utils.timezone import now
-
+from django.db import connections, transaction
 import time
+import hashlib
+import logging
+
 from typing import Dict, List, Optional
-from .forms import EmailUpdateForm, SignUpForm
+from .forms import EmailUpdateForm, SignUpForm, CreateCharacterForm
 from .server_status import query_ot_status, query_ot_players
 from .db import DB
 from .items_service import SLOT_NAMES
 from urllib.parse import urlencode
+from .auth_backends import OT_PASSWORD_TYPE, OT_ACCOUNT_TABLE, OT_PASSWORD_COL, OT_EMAIL_COL, OT_BLOCKED_COL
+
+User = get_user_model()
+log = logging.getLogger(__name__)
 
 db = DB(retries=2)
 OT_DB_ALIAS = getattr(settings, "OT_DB_ALIAS", "retrowar")  # or "otserv" if you use a 2nd DB
+OT_BLOCKED_COL = None
+PLAYERS_TBL  = getattr(settings, "OT_PLAYERS_TABLE", "players")
+ACC_COL      = getattr(settings, "OT_PLAYERS_ACCOUNT_COL", "account_id")
+SIGNUP_CONFIRM_EMAIL = getattr(settings, "SIGNUP_CONFIRM_EMAIL", True)
+
 
 SKILL_COLUMNS = {
     "level": "p.level",
@@ -799,55 +811,141 @@ def account_character_delete(request, pid: int):
     # If someone GETs this URL, just show a tiny confirm template
     return render(request, "pages/character_delete_confirm.html", {"char": row, "back_url": reverse("account_manage")})
 
+
+#MARK: Signup
+def _hash_password(plain: str, method: str) -> str:
+    b = (plain or "").encode("utf-8")
+    m = (method or "").lower()
+    if m == "plain":  return plain
+    if m == "sha1":   return hashlib.sha1(b).hexdigest()
+    if m == "md5":    return hashlib.md5(b).hexdigest()
+    if m == "sha256": return hashlib.sha256(b).hexdigest()
+    # fallback
+    return hashlib.sha1(b).hexdigest()
+
 def signup(request):
     if request.user.is_authenticated:
-        return redirect("account_manage")  # or wherever you want
+        return redirect("account_manage")
+
+    # Your form must provide: account_id (IntegerField), email (optional), password1, password2
+    form = SignUpForm(request.POST or None)
 
     if request.method == "POST":
-        form = SignUpForm(request.POST)
-        if form.is_valid():
+        if not form.is_valid():
+            return render(request, "pages/signup.html", {"form": form})
+
+        # Pull data
+        try:
+            account_id = int(form.cleaned_data["username"])
+        except Exception:
+            form.add_error("account_id", "Please enter a valid account number.")
+            return render(request, "pages/signup.html", {"form": form})
+
+        if account_id <= 0:
+            form.add_error("account_id", "Account number must be a positive integer.")
+            return render(request, "pages/signup.html", {"form": form})
+
+        email = form.cleaned_data.get("email") or ""
+        raw_password = form.cleaned_data["password1"]
+        hashed = _hash_password(raw_password, OT_PASSWORD_TYPE)
+
+        if OT_DB_ALIAS not in settings.DATABASES:
+            form.add_error(None, f"Server error: OT_DB_ALIAS '{OT_DB_ALIAS}' not configured.")
+            return render(request, "pages/signup.html", {"form": form})
+
+        # 1) Insert into OT using the exact id provided by the user
+        try:
+            with transaction.atomic(using=OT_DB_ALIAS):
+                with connections[OT_DB_ALIAS].cursor() as cur:
+                    # Ensure the id is free
+                    cur.execute(f"SELECT 1 FROM {OT_ACCOUNT_TABLE} WHERE id=%s LIMIT 1", [account_id])
+                    if cur.fetchone():
+                        form.add_error("account_id", "That account number is already in use.")
+                        return render(request, "pages/signup.html", {"form": form})
+
+                    cols = ["id", OT_PASSWORD_COL]
+                    vals = ["%s", "%s"]
+                    params = [account_id, hashed]
+
+                    if OT_EMAIL_COL:
+                        cols.append(OT_EMAIL_COL)
+                        vals.append("%s")
+                        params.append(email)
+
+                    if OT_BLOCKED_COL:
+                        cols.append(OT_BLOCKED_COL)
+                        vals.append("%s")
+                        params.append(0)  # unblocked by default
+
+                    sql = f"INSERT INTO {OT_ACCOUNT_TABLE} ({', '.join(cols)}) VALUES ({', '.join(vals)})"
+                    cur.execute(sql, params)
+        except Exception:
+            log.exception("OT INSERT failed for id=%s", account_id)
+            form.add_error(None, "We couldn’t create your game account. Please try again.")
+            return render(request, "pages/signup.html", {"form": form})
+
+        # 2) Create matching Django user (username is the account number)
+        try:
             user = User.objects.create_user(
-                username=form.cleaned_data["username"],
-                email=form.cleaned_data["email"],
-                password=form.cleaned_data["password1"],
-                is_active=False,  # inactive until confirmed
+                username=str(account_id),
+                email=email,
+                password=raw_password,
+                is_active=not SIGNUP_CONFIRM_EMAIL,
             )
+        except Exception:
+            log.exception("Django user creation failed; cleaning OT id=%s", account_id)
+            try:
+                with transaction.atomic(using=OT_DB_ALIAS):
+                    with connections[OT_DB_ALIAS].cursor() as cur:
+                        cur.execute(f"DELETE FROM {OT_ACCOUNT_TABLE} WHERE id=%s", [account_id])
+            except Exception:
+                log.exception("Failed to rollback OT account id=%s", account_id)
+            form.add_error(None, "We couldn’t create your site account. Please try again.")
+            return render(request, "pages/signup.html", {"form": form})
+
+        # 3) Optional email confirmation
+        if not SIGNUP_CONFIRM_EMAIL:
+            messages.success(request, "Account created. You can log in now with your account number.")
+            return redirect("login")
+
+        try:
             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
             token  = default_token_generator.make_token(user)
             confirm_url = request.build_absolute_uri(
                 reverse("signup_confirm", args=[uidb64, token])
             )
 
-            subject = "Confirm your Retrowar account"
-
-            ctx = {
-                "user": user,
-                "confirm_url": confirm_url,
-            }
-
+            ctx = {"user": user, "confirm_url": confirm_url}
+            subject   = "Confirm your Retrowar account"
             text_body = render_to_string("emails/signup_confirm.txt", ctx)
             html_body = render_to_string("emails/signup_confirm.html", ctx)
 
-            msg = EmailMultiAlternatives(
-                subject=subject,
-                body=text_body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[user.email],
-                reply_to=[getattr(settings, "SUPPORT_EMAIL", settings.DEFAULT_FROM_EMAIL)],
-            )
-            msg.attach_alternative(html_body, "text/html")
-            try:
+            if user.email:
+                msg = EmailMultiAlternatives(
+                    subject=subject,
+                    body=text_body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[user.email],
+                    reply_to=[getattr(settings, "SUPPORT_EMAIL", settings.DEFAULT_FROM_EMAIL)],
+                )
+                msg.attach_alternative(html_body, "text/html")
                 msg.send(fail_silently=False)
+
+        except Exception:
+            log.exception("Signup email failed; cleaning both sides; id=%s", account_id)
+            user.delete()
+            try:
+                with transaction.atomic(using=OT_DB_ALIAS):
+                    with connections[OT_DB_ALIAS].cursor() as cur:
+                        cur.execute(f"DELETE FROM {OT_ACCOUNT_TABLE} WHERE id=%s", [account_id])
             except Exception:
-                # If email fails, delete user to avoid a dead account
-                user.delete()
-                messages.error(request, "We couldn’t send the email. Please try again.")
-                return render(request, "pages/signup.html", {"form": form})
+                log.exception("Failed to rollback OT account id=%s after email failure", account_id)
+            form.add_error(None, "We couldn’t send the confirmation email. Please try again.")
+            return render(request, "pages/signup.html", {"form": form})
 
-            return render(request, "pages/signup_check_email.html", {"email": user.email})
-    else:
-        form = SignUpForm()
+        return render(request, "pages/signup_check_email.html", {"email": user.email})
 
+    # GET
     return render(request, "pages/signup.html", {"form": form})
 
 def signup_confirm(request, uidb64, token):
@@ -1027,3 +1125,111 @@ def commands(request):
 
 def rules(request):
     return render(request, "pages/rules.html", {"now": now()})
+
+#MARK: Create Character
+
+def _players_columns():
+    """Return set of column names present on the players table."""
+    with connections[OT_DB_ALIAS].cursor() as cur:
+        cur.execute(f"SHOW COLUMNS FROM {PLAYERS_TBL}")
+        return {row[0] for row in cur.fetchall()}
+
+@login_required
+def account_character_create(request):
+    # We stored this on login in your auth backend:
+    ot_account_id = request.session.get("ot_account_id")
+    if not ot_account_id:
+        messages.error(request, "Your OT account session is missing. Please log in again.")
+        return redirect("login")
+
+    form = CreateCharacterForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        name     = form.cleaned_data["name"].strip()
+        vocation = form.cleaned_data["vocation"]
+        sex      = form.cleaned_data["sex"]
+        town_id  = form.cleaned_data.get("town_id") or getattr(settings, "OT_DEFAULT_TOWN_ID", 1)
+
+        cols = _players_columns()
+
+        # Uniqueness check (case-insensitive)
+        with connections[OT_DB_ALIAS].cursor() as cur:
+            cur.execute(f"SELECT 1 FROM {PLAYERS_TBL} WHERE LOWER(name)=LOWER(%s) LIMIT 1", [name])
+            if cur.fetchone():
+                form.add_error("name", "That name is already taken.")
+                return render(request, "pages/account_character_create.html", {"form": form})
+
+        # Build a defaults map with sensible values, then only keep keys that exist in your schema
+        defaults = {
+            "name": name,
+            ACC_COL: ot_account_id,
+            "vocation": vocation,
+            "sex": sex,
+            "town_id": int(town_id),
+
+            # Common TFS columns (only included if they exist)
+            "level":            int(getattr(settings, "OT_START_LEVEL", 8)),
+            "experience":       0,
+            "health":           int(getattr(settings, "OT_START_HEALTH", 185)),
+            "healthmax":        int(getattr(settings, "OT_START_HEALTH", 185)),
+            "mana":             int(getattr(settings, "OT_START_MANA", 35)),
+            "manamax":          int(getattr(settings, "OT_START_MANA", 35)),
+            "maglevel":         int(getattr(settings, "OT_START_MAGLEVEL", 0)),
+            "cap":              int(getattr(settings, "OT_START_CAP", 470)),
+            "soul":             int(getattr(settings, "OT_START_SOUL", 100)),
+
+            # Position (0/0/0 lets town spawn handle it on some engines; otherwise set your temple coords)
+            "posx":             int(getattr(settings, "OT_START_POSX", 0)),
+            "posy":             int(getattr(settings, "OT_START_POSY", 0)),
+            "posz":             int(getattr(settings, "OT_START_POSZ", 0)),
+
+            # Look / outfit
+            "looktype":         int(getattr(settings, "OT_START_LOOKTYPE", 128)),
+            "lookhead":         int(getattr(settings, "OT_START_LOOKHEAD", 78)),
+            "lookbody":         int(getattr(settings, "OT_START_LOOKBODY", 88)),
+            "looklegs":         int(getattr(settings, "OT_START_LOOKLEGS", 58)),
+            "lookfeet":         int(getattr(settings, "OT_START_LOOKFEET", 0)),
+
+            # Optional often-present columns
+            "skull":            0,
+            "shield":           0,
+            "loss_experience":  100,
+            "loss_mana":        100,
+            "loss_skills":      100,
+            "loss_containers":  100,
+        }
+
+        # Keep only columns that actually exist
+        data = {k: v for k, v in defaults.items() if k in cols}
+
+        # Final safety: required minimum
+        for required in ("name", ACC_COL, "vocation", "sex", "town_id"):
+            if required not in data:
+                # If your schema is unusual, tell yourself why:
+                log.error("Missing required column on players table: %s", required)
+                messages.error(request, f"Server is missing required column '{required}' in '{PLAYERS_TBL}'.")
+                return render(request, "pages/account_character_create.html", {"form": form})
+
+
+        cur.execute(f"SELECT COUNT(*) FROM {PLAYERS_TBL} WHERE {ACC_COL}=%s", [ot_account_id])
+        if cur.fetchone()[0] >= 5:
+            form.add_error(None, "You reached the character limit on this account.")
+            return render(request, "pages/account_character_create.html", {"form": form})
+        # Insert
+        field_list = list(data.keys())
+        placeholders = ", ".join(["%s"] * len(field_list))
+        sql = f"INSERT INTO {PLAYERS_TBL} ({', '.join(field_list)}) VALUES ({placeholders})"
+        params = [data[f] for f in field_list]
+
+        try:
+            with transaction.atomic(using=OT_DB_ALIAS):
+                with connections[OT_DB_ALIAS].cursor() as cur:
+                    cur.execute(sql, params)
+        except Exception:
+            log.exception("Failed to insert character '%s' for account %s", name, ot_account_id)
+            messages.error(request, "Couldn’t create your character. Please try again.")
+            return render(request, "pages/account_character_create.html", {"form": form})
+
+        messages.success(request, f"Character '{name}' created!")
+        return redirect("account_manage")
+
+    return render(request, "pages/account_character_create.html", {"form": form})

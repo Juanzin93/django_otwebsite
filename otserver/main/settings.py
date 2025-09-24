@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-wju_hw5c8h#=fj6l!ywm0kzrbx$@=vr#_)5h8&m-4qcf$1m0^a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 DATABASE_ROUTERS = ["pages.dbrouters.OTServRouter"]
-ALLOWED_HOSTS = ["retrowarot.com", "www.retrowarot.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "retrowarot.com", "www.retrowarot.com"]
 CSRF_TRUSTED_ORIGINS = ["https://retrowarot.com", "https://www.retrowarot.com"]
 SECURE_SSL_REDIRECT = False  # we’ll enable later
 
@@ -268,3 +268,23 @@ TINYMCE_DEFAULT_CONFIG = {
                "alignleft aligncenter alignright alignjustify | "
                "bullist numlist outdent indent | link image media | code | help",
 }
+
+# OT players table + key columns
+OT_PLAYERS_TABLE       = os.getenv("OT_PLAYERS_TABLE", "players")
+OT_PLAYERS_ACCOUNT_COL = os.getenv("OT_PLAYERS_ACCOUNT_COL", "account_id")
+OT_DEFAULT_TOWN_ID     = int(os.getenv("OT_DEFAULT_TOWN_ID", 11)) # Rookgaard
+OT_START_LEVEL         = int(os.getenv("OT_START_LEVEL", 1))   # tweak for your world
+OT_START_HEALTH        = int(os.getenv("OT_START_HEALTH", 150))
+OT_START_MANA          = int(os.getenv("OT_START_MANA", 0))
+OT_START_CAP           = int(os.getenv("OT_START_CAP", 400))
+OT_START_MAGLEVEL      = int(os.getenv("OT_START_MAGLEVEL", 0))
+OT_START_SOUL          = int(os.getenv("OT_START_SOUL", 100))
+OT_START_POSX          = int(os.getenv("OT_START_POSX", 32097))    # 0/0/0 lets TFS town spawn handle it, if supported
+OT_START_POSY          = int(os.getenv("OT_START_POSY", 32219))
+OT_START_POSZ          = int(os.getenv("OT_START_POSZ", 7))
+OT_START_LOOKTYPE_MALE      = int(os.getenv("OT_START_LOOKTYPE", 128))
+OT_START_LOOKTYPE_FEMALE    = int(os.getenv("OT_START_LOOKTYPE", 136))
+OT_START_LOOKHEAD      = int(os.getenv("OT_START_LOOKHEAD", 78))
+OT_START_LOOKBODY      = int(os.getenv("OT_START_LOOKBODY", 88))
+OT_START_LOOKLEGS      = int(os.getenv("OT_START_LOOKLEGS", 58))
+OT_START_LOOKFEET      = int(os.getenv("OT_START_LOOKFEET", 0))

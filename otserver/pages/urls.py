@@ -36,6 +36,7 @@ urlpatterns = [
     path("account/", views.account_manage, name="account_manage"),
     path("account/characters/<int:pid>/edit/", views.account_character_edit, name="account_character_edit"),
     path("account/characters/<int:pid>/delete/", views.account_character_delete, name="account_character_delete"),
+    path("account/create-character", views.account_character_create, name="account_character_create"),
     
     # authentication URLs
     path("accounts/password_reset/",

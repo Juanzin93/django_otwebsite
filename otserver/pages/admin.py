@@ -8,8 +8,21 @@ from django import forms
 from django.contrib import admin
 from django.forms.widgets import Media
 from django.templatetags.static import static
-from .models import News
-
+from .ot_models import (
+    Accounts,
+    CharMarket,
+    GuildWars,
+    GuildwarKills,
+    Houses,
+    PlayerDepotitems,
+    PlayerItems,
+    PlayerStorage,
+    Players,
+    ServerConfig,
+    AccountBans,
+    AccountBanHistory,
+    PlayersOnline,
+)
 class TinyMCEStaticDark(TinyMCE):
     def use_required_attribute(self, *args, **kwargs):
         # Avoid admin warning for custom widget; keep default behavior
@@ -92,8 +105,92 @@ class NewsAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     ordering = ("-published_at",)
 
-@admin.register(ot_models.Players)    # class name based on inspectdb
-class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "level", "vocation", "account_id")
-    search_fields = ("name",)
-    list_filter = ("vocation",)
+# Helpful __str__ fallbacks (admin uses this to label rows)
+def _str(obj, field):
+    val = getattr(obj, field, None)
+    return str(val) if val is not None else f"{obj.__class__.__name__} #{getattr(obj, 'pk', '')}"
+
+@admin.register(AccountBans)
+class AccountBansAdmin(admin.ModelAdmin):
+    list_display = ("account", "reason", "banned_at", "expires_at", "banned_by")
+    search_fields = ("account__id", "reason")
+
+@admin.register(AccountBanHistory)
+class AccountBanHistoryAdmin(admin.ModelAdmin):
+    list_display = ("account", "reason", "banned_at", "expired_at", "banned_by")
+    search_fields = ("account__id", "reason")
+
+@admin.register(PlayersOnline)
+class PlayersOnlineAdmin(admin.ModelAdmin):
+    list_display = ("player_id",)
+    search_fields = ("player_id",)
+
+
+@admin.register(Accounts)
+class AccountsAdmin(admin.ModelAdmin):
+    list_display = ("id", "email", "type", "premdays", "coins", "created", "web_lastlogin")
+    search_fields = ("id", "email")
+    list_filter = ("type", "email_verified")
+    ordering = ("-created",)
+    readonly_fields = ()  # add fields here if you want to make them read-only
+
+@admin.register(Players)
+class PlayersAdmin(admin.ModelAdmin):
+    list_display = ("name", "account_id", "level", "vocation", "sex", "town_id", "lastlogin", "deleted")
+    search_fields = ("name", "account_id")
+    list_filter = ("vocation", "sex", "town_id", "deleted")
+    ordering = ("-level", "name")
+
+@admin.register(CharMarket)
+class CharMarketAdmin(admin.ModelAdmin):
+    list_display = ("name", "char_id", "seller_account", "current_bid", "auction_start", "auction_end", "highest_bid_acc")
+    search_fields = ("name", "char_id", "seller_account")
+    list_filter = ()
+    ordering = ("-auction_end",)
+
+@admin.register(GuildWars)
+class GuildWarsAdmin(admin.ModelAdmin):
+    list_display = ("name1", "name2", "guild1", "guild2", "status", "started", "ended")
+    search_fields = ("name1", "name2", "guild1", "guild2")
+    list_filter = ("status",)
+    ordering = ("-started",)
+
+@admin.register(GuildwarKills)
+class GuildwarKillsAdmin(admin.ModelAdmin):
+    list_display = ("killer", "target", "killerguild", "targetguild", "warid", "time")
+    search_fields = ("killer", "target", "killerguild", "targetguild", "warid")
+    list_filter = ("warid",)
+    ordering = ("-time",)
+
+@admin.register(Houses)
+class HousesAdmin(admin.ModelAdmin):
+    list_display = ("name", "owner", "town_id", "rent", "size", "beds", "paid", "warnings", "highest_bidder", "bid", "bid_end")
+    search_fields = ("name", "owner", "town_id", "highest_bidder")
+    list_filter = ("town_id", "beds")
+    ordering = ("town_id", "name")
+
+@admin.register(PlayerDepotitems)
+class PlayerDepotitemsAdmin(admin.ModelAdmin):
+    list_display = ("player_id", "sid", "pid", "itemtype", "count")
+    search_fields = ("player_id", "sid", "pid", "itemtype")
+    list_filter = ("itemtype",)
+    ordering = ("player_id", "sid")
+
+@admin.register(PlayerItems)
+class PlayerItemsAdmin(admin.ModelAdmin):
+    list_display = ("player_id", "sid", "pid", "itemtype", "count")
+    search_fields = ("player_id", "sid", "pid", "itemtype")
+    list_filter = ("itemtype",)
+    ordering = ("player_id", "sid")
+
+@admin.register(PlayerStorage)
+class PlayerStorageAdmin(admin.ModelAdmin):
+    list_display = ("player_id", "key", "value")
+    search_fields = ("player_id", "key")
+    ordering = ("player_id", "key")
+
+@admin.register(ServerConfig)
+class ServerConfigAdmin(admin.ModelAdmin):
+    list_display = ("config", "value")
+    search_fields = ("config",)
+    ordering = ("config",)

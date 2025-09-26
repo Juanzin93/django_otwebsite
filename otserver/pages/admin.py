@@ -168,21 +168,7 @@ class HousesAdmin(admin.ModelAdmin):
     search_fields = ("name", "owner", "town_id", "highest_bidder")
     list_filter = ("town_id", "beds")
     ordering = ("town_id", "name")
-
-@admin.register(PlayerDepotitems)
-class PlayerDepotitemsAdmin(admin.ModelAdmin):
-    list_display = ("player_id", "sid", "pid", "itemtype", "count")
-    search_fields = ("player_id", "sid", "pid", "itemtype")
-    list_filter = ("itemtype",)
-    ordering = ("player_id", "sid")
-
-@admin.register(PlayerItems)
-class PlayerItemsAdmin(admin.ModelAdmin):
-    list_display = ("player_id", "sid", "pid", "itemtype", "count")
-    search_fields = ("player_id", "sid", "pid", "itemtype")
-    list_filter = ("itemtype",)
-    ordering = ("player_id", "sid")
-
+    
 @admin.register(PlayerStorage)
 class PlayerStorageAdmin(admin.ModelAdmin):
     list_display = ("player_id", "key", "value")

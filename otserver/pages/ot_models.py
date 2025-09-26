@@ -611,6 +611,36 @@ class PlayerDeaths(models.Model):
         managed = False
         db_table = 'player_deaths'
 
+
+class PlayerDepotitems(models.Model):
+    player_id = models.IntegerField()
+    sid = models.IntegerField(db_comment='any given range eg 0-100 will be reserved for depot lockers and all > 100 will be then normal items inside depots')
+    pid = models.IntegerField()
+    itemtype = models.SmallIntegerField()
+    count = models.SmallIntegerField()
+    attributes = models.TextField()
+    abilities = models.TextField()
+
+    class Meta:
+        managed = False
+        db_table = 'player_depotitems'
+        unique_together = (('player_id', 'sid'),)
+
+
+class PlayerItems(models.Model):
+    player_id = models.IntegerField()
+    pid = models.IntegerField()
+    sid = models.IntegerField()
+    itemtype = models.SmallIntegerField()
+    count = models.SmallIntegerField()
+    attributes = models.TextField()
+    abilities = models.TextField()
+
+    class Meta:
+        managed = False
+        db_table = 'player_items'
+
+
 class PlayerMurders(models.Model):
     id = models.BigAutoField(primary_key=True)
     player_id = models.IntegerField()

@@ -36,7 +36,24 @@
 
 
         <h4 class="char__sub">Equipment / Inventory / Depot</h4>
-        {% include "partials/equipment_viewer.html" with equipment_json=o.equipment_json inventory_json=o.inventory_json depot_json=o.depot_json %}
+        <!--{% include "partials/equipment_viewer.html" with equipment_json=o.equipment_json inventory_json=o.inventory_json depot_json=o.depot_json %}-->
+        <div class="baz-equip" data-eq='{{ o.equipment_json|default:"[]"|escapejs }}'>
+              <!-- Row 1 -->
+              <div class="eq-slot eq-head" data-slot="1"  title="Head"></div>
+              <div class="eq-slot eq-neck" data-slot="2"  title="Amulet"></div>
+              <div class="eq-slot eq-back" data-slot="3"  title="Backpack"></div>
+              <!-- Row 2 -->
+              <div class="eq-slot eq-right" data-slot="5" title="Right Hand"></div>
+              <div class="eq-slot eq-armor" data-slot="4" title="Armor"></div>
+              <div class="eq-slot eq-left"  data-slot="6" title="Left Hand"></div>
+              <!-- Row 3 -->
+              <div class="eq-slot eq-legs" data-slot="7" title="Legs"></div>
+              <div class="eq-slot eq-ring" data-slot="9" title="Ring"></div>
+              <div class="eq-slot eq-ammo" data-slot="10" title="Ammo"></div>
+              <!-- Row 4 (center) -->
+              <div class="eq-slot eq-feet" data-slot="8" title="Feet"></div>
+            </div>
+          </div>
       </div>
 
       <aside class="auction__right">

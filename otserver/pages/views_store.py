@@ -24,10 +24,12 @@ class Pack:
 
 # Example packs; map to your Stripe Price IDs
 PACKS: List[Pack] = [
-    Pack("c250",  250, "9.99",  "49.90",  bonus=0,  stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C250"),  stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C250")),
-    Pack("c550",  550, "18.99", "89.90",  bonus=10, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C550"),  stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C550")),
-    Pack("c1150",1150, "34.99", "169.90", bonus=15, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C1150"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C1150")),
-    Pack("c2400",2400,"59.99", "299.90", bonus=20, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C2400"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C2400")),
+    Pack("25",  25, "5.00",  "25.00",  bonus=0,  stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C25"),  stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C25")),
+    Pack("50",  50, "10.00", "50.00",  bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C50"),  stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C50")),
+    Pack("100",100, "20.00", "100.00", bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C100"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C100")),
+    Pack("250",200,"50.00", "250.00", bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C250"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C250")),
+    Pack("550",550,"100.00", "500.00", bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C550"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C550")),
+    Pack("1100",1100,"200.00", "1000.00", bonus=10, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C1100"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C1100")),
 ]
 
 def _pack_by_id(pid:str)->Optional[Pack]:

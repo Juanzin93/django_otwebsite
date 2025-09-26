@@ -75,11 +75,11 @@ class OTAccountBackend(BaseBackend):
 
         # SELECT pieces
         # Provide a 'uname' column: if OT_USERNAME_COL == 'id', synthesize as CAST(id AS CHAR)
-        uname_select = (
-            "CAST(id AS CHAR) AS uname"
-            if OT_USERNAME_COL == "id"
-            else f"{OT_USERNAME_COL} AS uname"
-        )
+        #uname_select = (
+        #    "CAST(id AS CHAR) AS uname"
+        #    if OT_USERNAME_COL == "id"
+        #    else f"{OT_USERNAME_COL} AS uname"
+        #)
 
         db = DB(alias=OT_DB_ALIAS)
         row = db.run(
@@ -87,7 +87,7 @@ class OTAccountBackend(BaseBackend):
             f"""
             SELECT
                 id,
-                {uname_select},
+
                 {OT_PASSWORD_COL} AS upass,
                 {OT_EMAIL_COL} AS uemail
             FROM {OT_ACCOUNT_TABLE}

@@ -872,10 +872,10 @@ def signup(request):
                         vals.append("%s")
                         params.append(email)
 
-                    if OT_BLOCKED_COL:
-                        cols.append(OT_BLOCKED_COL)
-                        vals.append("%s")
-                        params.append(0)  # unblocked by default
+                    #if OT_BLOCKED_COL:
+                    #    cols.append(OT_BLOCKED_COL)
+                    #    vals.append("%s")
+                    #    params.append(0)  # unblocked by default
 
                     sql = f"INSERT INTO {OT_ACCOUNT_TABLE} ({', '.join(cols)}) VALUES ({', '.join(vals)})"
                     cur.execute(sql, params)

@@ -240,11 +240,6 @@ STRIPE_PUBLIC_KEY    = os.getenv("STRIPE_PUBLIC_KEY")        # publishable
 STRIPE_WEBHOOK_SECRET= os.getenv("STRIPE_WEBHOOK_SECRET")    # optional but recommended
 STRIPE_PIX_ENABLED   = os.getenv("STRIPE_PIX_ENABLED","0") == "1"  # requires BR Stripe account
 
-# Map your Stripe Price IDs per pack/currency (already referenced in the view via env)
-# Example (place into your environment):
-# STRIPE_PRICE_USD_C250=price_123 ...
-# STRIPE_PRICE_BRL_C250=price_abc ...
-
 # ---- PayPal ----
 PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
 PAYPAL_SECRET    = os.getenv("PAYPAL_SECRET")

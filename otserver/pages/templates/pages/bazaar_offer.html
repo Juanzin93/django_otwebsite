@@ -36,7 +36,6 @@
 
 
         <h4 class="char__sub">Equipment / Inventory / Depot</h4>
-        <!--{% include "partials/equipment_viewer.html" with equipment_json=o.equipment_json inventory_json=o.inventory_json depot_json=o.depot_json %}-->
         <div class="baz-equip" data-eq='{{ o.equipment_json|default:"[]"|escapejs }}'>
               <!-- Row 1 -->
               <div class="eq-slot eq-head" data-slot="1"  title="Head"></div>

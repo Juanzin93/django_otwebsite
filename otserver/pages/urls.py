@@ -1,5 +1,5 @@
 from django.urls import path, include
-from . import views, views_guild, views_store, views_bans, views_houses, views_news
+from . import views, views_guild, views_store, views_bans, views_houses, views_news, views_pix
 from django.contrib.auth import views as auth_views
 from .views_bazaar import bazaar_list, bazaar_offer, bazaar_bid, bazaar_sell 
 
@@ -76,6 +76,11 @@ urlpatterns = [
     # PayPal
     path("store/paypal/create/", views_store.paypal_create, name="store_paypal_create"),
     path("store/paypal/capture/", views_store.paypal_capture, name="store_paypal_capture"),
+
+    # PIX
+    path("store/pix/create/", views_pix.pix_create, name="pix_create"),
+    path("store/pix/status/<str:txid>/", views_pix.pix_status, name="pix_status"),
+    path("store/pix/webhook/", views_pix.pix_webhook, name="pix_webhook"),
 
     # Results
     path("store/success/", views_store.store_success, name="store_success"),

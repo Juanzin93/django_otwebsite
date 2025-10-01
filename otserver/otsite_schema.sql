@@ -116,3 +116,21 @@ CREATE TABLE IF NOT EXISTS `coin_tx` (
     FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`)
     ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS pix_tx (
+  id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+  txid          VARCHAR(64) UNIQUE,      -- PSP transaction id or loc id
+  account_id    INT NOT NULL,
+  pack_id       VARCHAR(32) NOT NULL,
+  coins         INT NOT NULL,
+  amount        INT NOT NULL,            -- cents
+  currency      VARCHAR(3) NOT NULL,     -- 'BRL'
+  provider      VARCHAR(32) NOT NULL,
+  status        VARCHAR(32) NOT NULL,    -- created|pending|paid|expired|error
+  qr_emv        TEXT,                    -- copia-e-cola (EMV)
+  qr_base64     LONGTEXT,                -- image (if PSP returns it)
+  external_id   VARCHAR(64),             -- PSP payment id
+  created_at    INT NOT NULL,
+  expires_at    INT,
+  UNIQUE KEY unique_provider_ext (provider, external_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

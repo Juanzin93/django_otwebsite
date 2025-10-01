@@ -48,6 +48,8 @@
           {% if currency == 'BRL' %}
             {% if STRIPE_PIX_ENABLED %}
               <small class="muted center">PIX available after clicking “Checkout”.</small>
+            {% elif PIX_WEBHOOK_ENABLED %}
+              <button class="btn btn--checkout pay-pix" data-pack="{{ pk.id }}">PIX</button>
             {% elif PIX_KEY %}
               <details class="pix">
                 <summary>Pay with PIX</summary>
@@ -93,6 +95,48 @@
     </div>
   </section>
 </main>
+
+{% if currency == 'BRL' %}
+  <button class="btn btn--checkout pay-pix" data-pack="{{ pk.id }}">PIX</button>
+{% endif %}
+
+<script>
+async function pixPay(pack){
+  const r = await fetch("{% url 'pix_create' %}", {
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value || ''},
+    body: JSON.stringify({ pack })
+  });
+  const j = await r.json();
+  if(!r.ok){ alert(j.error||'PIX error'); return; }
+
+  // show QR (base64)
+  const box = document.createElement('div');
+  box.className = 'pix-dialog';
+  box.innerHTML = `
+    <div class="panel panel--parchment">
+      <h3>PIX “copia e cola”</h3>
+      ${j.qr_base64 ? `<img src="data:image/png;base64,${j.qr_base64}" alt="PIX QR" style="max-width:280px">` : ''}
+      <textarea readonly style="width:100%;height:120px">${j.emv||''}</textarea>
+      <p class="muted">We’ll auto-deliver coins once payment clears.</p>
+    </div>`;
+  document.body.appendChild(box);
+
+  // poll status (optional UX)
+  const poll = setInterval(async ()=>{
+    const rr = await fetch(j.poll_url);
+    const s = await rr.json();
+    if(s.status === 'paid'){
+      clearInterval(poll);
+      window.location = "{% url 'store_success' %}";
+    }
+  }, 4000);
+}
+
+document.querySelectorAll('.pay-pix').forEach(btn=>{
+  btn.addEventListener('click', ()=> pixPay(btn.dataset.pack));
+});
+</script>
 
 {% if STRIPE_PUBLIC_KEY %}
 <script src="https://js.stripe.com/v3/"></script>

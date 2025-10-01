@@ -39,11 +39,6 @@ def _pack_by_id(pid:str)->Optional[Pack]:
     return None
 
 # ---------- Helpers ----------
-def _ot_account_id(user) -> Optional[int]:
-    # your project already stores this on user.profile.ot_account_id
-    prof = getattr(user, "profile", None)
-    return getattr(prof, "ot_account_id", None)
-
 def _credit_coins(account_id: int, coins: int, txid: str, method: str):
     """
     Idempotent credit:
@@ -74,7 +69,7 @@ def donate(request):
     acc_email = request.user.email
     acc_id = request.user.username
     if not acc_id:
-        return HttpResponseBadRequest(json.dumps({"error":"Account not linked"}), content_type="application/json")
+        return HttpResponseBadRequest(json.dumps({"error":"Account not linked id"}), content_type="application/json")
     
     currency = request.GET.get("currency", "USD").upper()
     currency = "BRL" if currency == "BRL" else "USD"
@@ -126,7 +121,7 @@ def create_checkout_session(request):
     if not price_id:
         return HttpResponseBadRequest(json.dumps({"error": "Stripe price not configured"}), content_type="application/json")
 
-    acc_id = _ot_account_id(request.user)
+    acc_id = request.user.username
     if not acc_id:
         return HttpResponseBadRequest(json.dumps({"error":"Account not linked"}), content_type="application/json")
 
@@ -210,7 +205,7 @@ def paypal_create(request):
     pack = _pack_by_id(pack_id)
     if not pack:
         return HttpResponseBadRequest(json.dumps({"error":"Bad pack"}), content_type="application/json")
-    acc_id = _ot_account_id(request.user)
+    acc_id = request.user.username
     if not acc_id:
         return HttpResponseBadRequest(json.dumps({"error":"Account not linked"}), content_type="application/json")
 
@@ -275,10 +270,10 @@ def paypal_capture(request):
         custom = pu.get("payments",{}).get("captures",[{}])[0].get("custom_id") or pu.get("custom_id")
         # custom_id format acc:123:coins:250
         parts = (custom or "").split(":")
-        acc_id = int(parts[1]) if len(parts) >= 4 else _ot_account_id(request.user)
+        acc_id = int(parts[1]) if len(parts) >= 4 else request.user.username
         coins  = int(parts[3]) if len(parts) >= 4 else (_pack_by_id(ref).coins if _pack_by_id(ref) else 0)
     except Exception:
-        acc_id, coins = _ot_account_id(request.user), 0
+        acc_id, coins = request.user.username, 0
 
     if status == "COMPLETED" and acc_id and coins:
         _credit_coins(acc_id, coins, order_id, method="paypal")

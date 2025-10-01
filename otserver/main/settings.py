@@ -239,7 +239,7 @@ STRIPE_API_KEY       = os.getenv("STRIPE_API_KEY")           # secret key
 STRIPE_PUBLIC_KEY    = os.getenv("STRIPE_PUBLIC_KEY")        # publishable
 STRIPE_WEBHOOK_SECRET= os.getenv("STRIPE_WEBHOOK_SECRET")    # optional but recommended
 STRIPE_PIX_ENABLED   = os.getenv("STRIPE_PIX_ENABLED","0") == "1"  # requires BR Stripe account
-PIX_WEBHOOK_ENABLED  = os.getenv("PIX_WEBHOOK_ENABLED","0") == "1"  # requires BR Stripe account
+PIX_WEBHOOK_ENABLED  = os.getenv("PIX_WEBHOOK_ENABLED","0") == "0"  # requires BR Stripe account
 
 # ---- PayPal ----
 PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")

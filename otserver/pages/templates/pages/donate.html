@@ -94,9 +94,7 @@
   </section>
 </main>
 
-{% if currency == 'BRL' %}
-  <button class="btn btn--checkout pay-pix" data-pack="{{ pk.id }}">PIX</button>
-{% endif %}
+{% if PIX_WEBHOOK_ENABLED %}
 
 <script>
 async function pixPay(pack){
@@ -135,6 +133,7 @@ document.querySelectorAll('.pay-pix').forEach(btn=>{
   btn.addEventListener('click', ()=> pixPay(btn.dataset.pack));
 });
 </script>
+{% endif %}
 
 {% if STRIPE_PUBLIC_KEY %}
 <script src="https://js.stripe.com/v3/"></script>

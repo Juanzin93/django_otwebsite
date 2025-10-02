@@ -99,5 +99,5 @@ urlpatterns = [
     path("news/<int:year>/<int:month>/", views_news.news_archive_month, name="news_archive_month"),
     path("news/<slug:slug>/", views_news.news_detail, name="news_detail"),
     path("tinymce/", include("tinymce.urls")),
-    path("api/updater", views_updater.updater, name="otclient_updater"),
+    path("api/", views_updater.updater, name="otclient_updater"),
 ]

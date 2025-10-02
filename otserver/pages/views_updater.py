@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 FILES_DIR = "/srv/django_otwebsite/otserver/api"
-FILES_URL = "https://retrowarot.com/api/updater"  # public URL served by Nginx/Apache
+FILES_URL = "https://retrowarot.com/api/"  # public URL served by Nginx/Apache
 FILES_AND_DIRS = ["init.lua", "data", "modules", "mods", "layouts"]
 
 BINARIES = {

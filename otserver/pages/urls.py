@@ -1,5 +1,5 @@
 from django.urls import path, include
-from . import views, views_guild, views_store, views_bans, views_houses, views_news, views_pix
+from . import views, views_guild, views_store, views_bans, views_houses, views_news, views_pix, views_updater
 from django.contrib.auth import views as auth_views
 from .views_bazaar import bazaar_list, bazaar_offer, bazaar_bid, bazaar_sell 
 
@@ -99,4 +99,5 @@ urlpatterns = [
     path("news/<int:year>/<int:month>/", views_news.news_archive_month, name="news_archive_month"),
     path("news/<slug:slug>/", views_news.news_detail, name="news_detail"),
     path("tinymce/", include("tinymce.urls")),
+    path("updater/", views_updater.updater, name="otclient_updater"),
 ]

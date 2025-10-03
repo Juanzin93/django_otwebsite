@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from . import views, views_guild, views_store, views_bans, views_houses, views_news, views_pix, views_updater
 from django.contrib.auth import views as auth_views
 from .views_bazaar import bazaar_list, bazaar_offer, bazaar_bid, bazaar_sell 
@@ -100,4 +100,5 @@ urlpatterns = [
     path("news/<slug:slug>/", views_news.news_detail, name="news_detail"),
     path("tinymce/", include("tinymce.urls")),
     path("api/", views_updater.updater, name="otclient_updater"),
+    re_path(r"^api/(?P<subpath>.+)$", views_updater.api_file, name="api"),
 ]

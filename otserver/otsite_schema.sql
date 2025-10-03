@@ -104,7 +104,7 @@ ALTER TABLE `accounts`
 -- 2) Minimal transaction log for auditing + double-charge protection
 CREATE TABLE IF NOT EXISTS `coin_tx` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `account_id` INT UNSIGNED NOT NULL,
+  `account_id` INT NOT NULL,                -- match type of accounts.id (usually INT signed)
   `coins` INT NOT NULL,
   `method` ENUM('stripe','paypal','pix','admin') NOT NULL,
   `external_id` VARCHAR(191) NOT NULL,      -- Stripe session id, PayPal order id, etc.

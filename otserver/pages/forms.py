@@ -54,7 +54,7 @@ class SignUpForm(forms.Form):
 class CreateCharacterForm(forms.Form):
     name = forms.CharField(max_length=30)
     if settings.WAR_SERVER_ENABLED:
-        vocation = forms.TypedChoiceField(choices=VOCATION_CHOICES - [(0, "None")], coerce=int)
+        vocation = forms.TypedChoiceField(choices=[(v, name) for v, name in VOCATION_CHOICES if v != 0], coerce=int)
     else:
         vocation = forms.TypedChoiceField(choices=[(0, "None")], coerce=int)
     sex = forms.TypedChoiceField(choices=SEX_CHOICES, coerce=int)

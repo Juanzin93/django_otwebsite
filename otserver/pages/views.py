@@ -1194,7 +1194,8 @@ def account_character_create(request):
             "lookbody":         int(getattr(settings, "OT_START_LOOKBODY", 88)),
             "looklegs":         int(getattr(settings, "OT_START_LOOKLEGS", 58)),
             "lookfeet":         int(getattr(settings, "OT_START_LOOKFEET", 0)),
-
+            "conditions":       b"",
+            "comment":          "",
             # Optional often-present columns
             "skull":            0,
         }
@@ -1228,7 +1229,8 @@ def account_character_create(request):
             "lookbody":         int(getattr(settings, "WAR_OT_START_LOOKBODY", 88)),
             "looklegs":         int(getattr(settings, "WAR_OT_START_LOOKLEGS", 58)),
             "lookfeet":         int(getattr(settings, "WAR_OT_START_LOOKFEET", 0)),
-
+            "conditions":       b"",
+            "comment":          "",
             # Optional often-present columns
             "skull":            0,
             "skill_axe":        10,

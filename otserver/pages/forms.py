@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
@@ -52,7 +53,10 @@ class SignUpForm(forms.Form):
 
 class CreateCharacterForm(forms.Form):
     name = forms.CharField(max_length=30)
-    vocation = forms.TypedChoiceField(choices=VOCATION_CHOICES, coerce=int)
+    if settings.WAR_SERVER_ENABLED:
+        vocation = forms.TypedChoiceField(choices=VOCATION_CHOICES - [(0, "None")], coerce=int)
+    else:
+        vocation = forms.TypedChoiceField(choices=[(0, "None")], coerce=int)
     sex = forms.TypedChoiceField(choices=SEX_CHOICES, coerce=int)
     town_id = forms.IntegerField(min_value=1, required=False)
 

@@ -45,10 +45,12 @@ env = environ.Env(
     POWERGAMERS_SHOWBOX_ENABLED=(bool, True),
     ONLINERANKING_SHOWBOX_ENABLED=(bool, True),
     DISCORDWIDGET_ENABLED=(bool, True),
+    WAR_SERVER_ENABLED=(bool, True),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
 SHOP_ENABLED = env.bool("SHOP_ENABLED")
+WAR_SERVER_ENABLED = env.bool("WAR_SERVER_ENABLED")
 QUICKLOGIN_SHOWBOX_ENABLED = env.bool("QUICKLOGIN_SHOWBOX_ENABLED", default=True)
 GALLERY_SHOWBOX_ENABLED = env.bool("GALLERY_SHOWBOX_ENABLED")
 SERVERINFO_SHOWBOX_ENABLED = env.bool("SERVERINFO_SHOWBOX_ENABLED")
@@ -284,3 +286,29 @@ OT_START_LOOKHEAD      = int(os.getenv("OT_START_LOOKHEAD", 78))
 OT_START_LOOKBODY      = int(os.getenv("OT_START_LOOKBODY", 88))
 OT_START_LOOKLEGS      = int(os.getenv("OT_START_LOOKLEGS", 58))
 OT_START_LOOKFEET      = int(os.getenv("OT_START_LOOKFEET", 0))
+
+# war server
+WAR_OT_DEFAULT_TOWN_ID       = int(os.getenv("WAR_OT_DEFAULT_TOWN_ID", 1)) # Thais
+WAR_OT_START_LEVEL           = int(os.getenv("WAR_OT_START_LEVEL", 1))   # tweak for your world
+WAR_OT_START_HEALTH          = int(os.getenv("WAR_OT_START_HEALTH", 150))
+WAR_OT_START_MANA            = int(os.getenv("WAR_OT_START_MANA", 0))
+WAR_OT_START_CAP             = int(os.getenv("WAR_OT_START_CAP", 400))
+WAR_OT_START_MAGLEVEL        = int(os.getenv("WAR_OT_START_MAGLEVEL", 0))
+WAR_OT_START_SOUL            = int(os.getenv("WAR_OT_START_SOUL", 100))
+WAR_OT_START_POSX            = int(os.getenv("WAR_OT_START_POSX", 32097))    # 0/0/0 lets TFS town spawn handle it, if supported
+WAR_OT_START_POSY            = int(os.getenv("WAR_OT_START_POSY", 32219))
+WAR_OT_START_POSZ            = int(os.getenv("WAR_OT_START_POSZ", 7))
+WAR_OT_START_LOOKTYPE_MALE   = int(os.getenv("WAR_OT_START_LOOKTYPE", 128))
+WAR_OT_START_LOOKTYPE_FEMALE = int(os.getenv("WAR_OT_START_LOOKTYPE", 136))
+WAR_OT_START_LOOKHEAD        = int(os.getenv("WAR_OT_START_LOOKHEAD", 78))
+WAR_OT_START_LOOKBODY        = int(os.getenv("WAR_OT_START_LOOKBODY", 88))
+WAR_OT_START_LOOKLEGS        = int(os.getenv("WAR_OT_START_LOOKLEGS", 58))
+WAR_OT_START_LOOKFEET        = int(os.getenv("WAR_OT_START_LOOKFEET", 0))
+WAR_OT_START_MAGE_MAGIC_SKILL       = int(os.getenv("WAR_OT_START_MAGE_MAGIC_SKILL", 10))
+WAR_OT_START_PALADIN_MAGIC_SKILL       = int(os.getenv("WAR_OT_START_PALADIN_MAGIC_SKILL", 10))
+WAR_OT_START_KNIGHT_MAGIC_SKILL       = int(os.getenv("WAR_OT_START_KNIGHT_MAGIC_SKILL", 10))
+WAR_OT_START_AXE_SKILL       = int(os.getenv("WAR_OT_START_AXE_SKILL", 10))
+WAR_OT_START_CLUB_SKILL      = int(os.getenv("WAR_OT_START_CLUB_SKILL", 10))
+WAR_OT_START_SWORD_SKILL     = int(os.getenv("WAR_OT_START_SWORD_SKILL", 10))
+WAR_OT_START_DISTANCE_SKILL  = int(os.getenv("WAR_OT_START_DISTANCE_SKILL", 10))
+WAR_OT_START_SHIELDING_SKILL = int(os.getenv("WAR_OT_START_SHIELDING_SKILL", 10))

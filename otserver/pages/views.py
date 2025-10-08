@@ -1191,15 +1191,72 @@ def account_character_create(request):
 
             # Optional often-present columns
             "skull":            0,
-            "shield":           0,
-            "loss_experience":  100,
-            "loss_mana":        100,
-            "loss_skills":      100,
-            "loss_containers":  100,
+            #"shield":           0,
+            #"loss_experience":  100,
+            #"loss_mana":        100,
+            #"loss_skills":      100,
+            #"loss_containers":  100,
         }
 
-        # Keep only columns that actually exist
-        data = {k: v for k, v in defaults.items() if k in cols}
+        war_server = {
+            "name": name,
+            ACC_COL: ot_account_id,
+            "vocation": vocation,
+            "sex": sex,
+            "town_id": int(town_id),
+
+            # Common TFS columns (only included if they exist)
+            "level":            int(getattr(settings, "WAR_OT_START_LEVEL", 8)),
+            "experience":       0,
+            "health":           int(getattr(settings, "WAR_OT_START_HEALTH", 185)),
+            "healthmax":        int(getattr(settings, "WAR_OT_START_HEALTH", 185)),
+            "mana":             int(getattr(settings, "WAR_OT_START_MANA", 35)),
+            "manamax":          int(getattr(settings, "WAR_OT_START_MANA", 35)),
+            "maglevel":         int(getattr(settings, "WAR_OT_START_MAGLEVEL", 0)),
+            "cap":              int(getattr(settings, "WAR_OT_START_CAP", 470)),
+            "soul":             int(getattr(settings, "WAR_OT_START_SOUL", 100)),
+
+            # Position (0/0/0 lets town spawn handle it on some engines; otherwise set your temple coords)
+            "posx":             int(getattr(settings, "WAR_OT_START_POSX", 0)),
+            "posy":             int(getattr(settings, "WAR_OT_START_POSY", 0)),
+            "posz":             int(getattr(settings, "WAR_OT_START_POSZ", 0)),
+
+            # Look / outfit
+            "looktype":         int(getattr(settings, "WAR_OT_START_LOOKTYPE", 128)),
+            "lookhead":         int(getattr(settings, "WAR_OT_START_LOOKHEAD", 78)),
+            "lookbody":         int(getattr(settings, "WAR_OT_START_LOOKBODY", 88)),
+            "looklegs":         int(getattr(settings, "WAR_OT_START_LOOKLEGS", 58)),
+            "lookfeet":         int(getattr(settings, "WAR_OT_START_LOOKFEET", 0)),
+
+            # Optional often-present columns
+            "skull":            0,
+            "skill_axe":        10, #int(getattr(settings, "WAR_OT_START_AXE_SKILL", 0)),
+            "skill_club":       10, #int(getattr(settings, "WAR_OT_START_CLUB_SKILL", 0)),
+            "skill_sword":      10, #int(getattr(settings, "WAR_OT_START_SWORD_SKILL", 0)),
+            "skill_dist":       10, #int(getattr(settings, "WAR_OT_START_DISTANCE_SKILL", 0)),
+            "skill_shielding":  10, #int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0)),
+        }
+
+        if settings.WAR_SERVER_ENABLED:
+            for k, v in war_server.items():
+                if k in cols:
+                    if k == "vocation":
+                        if v in [1, 2]:
+                            war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_MAGE_MAGIC_SKILL", 0))
+                        elif v == 3:
+                            war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_PALADIN_MAGIC_SKILL", 0))
+                            war_server["skill_dist"] = int(getattr(settings, "WAR_OT_START_DISTANCE_SKILL", 0))
+                            war_server["skill_shielding"] = int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0))
+                        elif v == 4:
+                            war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_KNIGHT_MAGIC_SKILL", 0))
+                            war_server["skill_axe"] = int(getattr(settings, "WAR_OT_START_AXE_SKILL", 0))
+                            war_server["skill_club"] = int(getattr(settings, "WAR_OT_START_CLUB_SKILL", 0))
+                            war_server["skill_sword"] = int(getattr(settings, "WAR_OT_START_SWORD_SKILL", 0))
+                            war_server["skill_shielding"] = int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0))
+                    
+            data = {k: v for k, v in war_server.items() if k in cols}
+        else:
+            data = {k: v for k, v in defaults.items() if k in cols}
 
         # Final safety: required minimum
         for required in ("name", ACC_COL, "vocation", "sex", "town_id"):

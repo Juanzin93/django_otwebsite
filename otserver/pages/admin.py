@@ -1,28 +1,29 @@
 # yourapp/admin.py
+import csv
 from django.contrib import admin
 from django import forms
 from tinymce.widgets import TinyMCE
 from .models import News
-from . import ot_models
-from django import forms
-from django.contrib import admin
 from django.forms.widgets import Media
 from django.templatetags.static import static
+from django.http import HttpResponse
+from django.db.models import Sum, Count, F, Func, DateTimeField
 from .ot_models import (
     Accounts,
     CharMarket,
     GuildWars,
     GuildwarKills,
     Houses,
-    PlayerDepotitems,
-    PlayerItems,
     PlayerStorage,
     Players,
     ServerConfig,
     AccountBans,
     AccountBanHistory,
     PlayersOnline,
+    CoinTx,
+    PixTx,
 )
+
 class TinyMCEStaticDark(TinyMCE):
     def use_required_attribute(self, *args, **kwargs):
         # Avoid admin warning for custom widget; keep default behavior
@@ -180,3 +181,105 @@ class ServerConfigAdmin(admin.ModelAdmin):
     list_display = ("config", "value")
     search_fields = ("config",)
     ordering = ("config",)
+
+    
+class FromUnixTime(Func):
+    function = "FROM_UNIXTIME"
+    output_field = DateTimeField()
+
+def export_as_csv(modeladmin, request, queryset):
+    meta = modeladmin.model._meta
+    fields = [f.name for f in meta.fields]
+    resp = HttpResponse(content_type="text/csv")
+    resp["Content-Disposition"] = f'attachment; filename="{meta.model_name}.csv"'
+    writer = csv.writer(resp)
+    writer.writerow(fields)
+    for obj in queryset:
+        writer.writerow([getattr(obj, f) for f in fields])
+    return resp
+export_as_csv.short_description = "Export selected as CSV"
+
+@admin.register(CoinTx)
+class CoinTxAdmin(admin.ModelAdmin):
+    list_display = ("id","account_id","method","coins","external_id","created_dt")
+    list_filter = ("method",)
+    search_fields = ("external_id","account_id")
+    date_hierarchy = None  # we’ll use an annotated datetime instead
+    actions = [export_as_csv]
+    ordering = ("-id",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # annotate DB-level datetime for sorting if MySQL available
+        try:
+            return qs.annotate(created_dt_db=FromUnixTime(F("created_at")))
+        except Exception:
+            return qs
+
+    def created_dt(self, obj):
+        # fallback to Python property if DB func not available
+        return getattr(obj, "created_dt_db", None) or obj.created_dt
+    created_dt.admin_order_field = "created_dt_db"
+    created_dt.short_description = "Created at"
+
+    change_list_template = "admin/coin_tx_change_list.html"
+
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context=extra_context)
+        try:
+            cl = response.context_data["cl"]
+            qs = cl.queryset
+            aggr = qs.aggregate(
+                total_txs=Count("id"),
+                total_coins=Sum("coins"),
+            )
+            # per-method breakdown (optional)
+            per_method = (
+                qs.values("method")
+                  .annotate(count=Count("id"), coins=Sum("coins"))
+                  .order_by("method")
+            )
+            response.context_data.update({
+                "agg_total_txs": aggr["total_txs"] or 0,
+                "agg_total_coins": aggr["total_coins"] or 0,
+                "per_method": list(per_method),
+            })
+        except Exception:
+            pass
+        return response
+
+
+@admin.register(PixTx)
+class PixTxAdmin(admin.ModelAdmin):
+    list_display = ("id","account_id","status","coins","amount_brl","provider","created_dt")
+    list_filter = ("status","provider","currency")
+    search_fields = ("txid","external_id","account_id")
+    actions = [export_as_csv]
+    ordering = ("-id",)
+
+    def amount_brl(self, obj):
+        if obj.currency.upper() == "BRL":
+            return f"R$ {obj.amount/100:,.2f}"
+        return f"{obj.currency} {obj.amount/100:,.2f}"
+    amount_brl.short_description = "Amount"
+
+    change_list_template = "admin/pix_tx_change_list.html"
+
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context=extra_context)
+        try:
+            cl = response.context_data["cl"]
+            qs = cl.queryset
+            aggr = qs.aggregate(
+                total_pix_txs=Count("id"),
+                total_pix_cents=Sum("amount"),
+                total_pix_coins=Sum("coins"),
+            )
+            response.context_data.update({
+                "agg_total_pix_txs": aggr["total_pix_txs"] or 0,
+                "agg_total_pix_brl": (aggr["total_pix_cents"] or 0) / 100.0,
+                "agg_total_pix_coins": aggr["total_pix_coins"] or 0,
+            })
+        except Exception:
+            pass
+        return response

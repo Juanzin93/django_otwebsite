@@ -773,3 +773,64 @@ class TileStore(models.Model):
     class Meta:
         managed = False
         db_table = 'tile_store'
+
+
+class CoinTx(models.Model):
+    class Method(models.TextChoices):
+        STRIPE = "stripe", "Stripe"
+        PAYPAL = "paypal", "PayPal"
+        PIX    = "pix", "PIX"
+        ADMIN  = "admin", "Admin"
+
+    id = models.BigAutoField(primary_key=True)  # BIGINT UNSIGNED
+    account_id = models.IntegerField()          # match your accounts.id type
+    coins = models.IntegerField()
+    method = models.CharField(max_length=10, choices=Method.choices)
+    external_id = models.CharField(max_length=191)
+    created_at = models.PositiveIntegerField()  # unix epoch seconds
+
+    class Meta:
+        db_table = "coin_tx"
+        indexes = [
+            models.Index(fields=["method", "external_id"], name="uniq_method_ext"),
+            models.Index(fields=["account_id", "created_at"], name="idx_account_time"),
+        ]
+        unique_together = (("method", "external_id"),)
+
+    def __str__(self):
+        return f"{self.method}:{self.external_id} ({self.coins} coins)"
+
+    # nice read-only field for admin list
+    @property
+    def created_dt(self):
+        from datetime import datetime, timezone
+        return datetime.fromtimestamp(self.created_at, tz=timezone.utc)
+
+
+# Optional: PIX transaction table if you use it
+class PixTx(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    txid = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    account_id = models.IntegerField()
+    pack_id = models.CharField(max_length=32)
+    coins = models.IntegerField()
+    amount = models.IntegerField()      # cents
+    currency = models.CharField(max_length=3, default="BRL")
+    provider = models.CharField(max_length=32)
+    status = models.CharField(max_length=32)    # created|pending|paid|expired|error
+    qr_emv = models.TextField(null=True, blank=True)
+    qr_base64 = models.TextField(null=True, blank=True)
+    external_id = models.CharField(max_length=64, null=True, blank=True)
+    created_at = models.IntegerField()
+    expires_at = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = "pix_tx"
+        indexes = [
+            models.Index(fields=["provider", "external_id"], name="unique_provider_ext"),
+        ]
+
+    @property
+    def created_dt(self):
+        from datetime import datetime, timezone
+        return datetime.fromtimestamp(self.created_at, tz=timezone.utc)

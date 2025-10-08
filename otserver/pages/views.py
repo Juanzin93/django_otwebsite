@@ -1147,16 +1147,22 @@ def account_character_create(request):
         name     = form.cleaned_data["name"].strip()
         vocation = form.cleaned_data["vocation"]
         sex      = form.cleaned_data["sex"]
-        town_id  = form.cleaned_data.get("town_id") or getattr(settings, "OT_DEFAULT_TOWN_ID", 1)
+        if WAR_SERVER_ENABLED:
+            town_id  = getattr(settings, "WAR_OT_DEFAULT_TOWN_ID", 1)
+        else:
+            town_id  = getattr(settings, "OT_DEFAULT_TOWN_ID", 1) #form.cleaned_data.get("town_id") or getattr(settings, "OT_DEFAULT_TOWN_ID", 1)
 
         cols = _players_columns()
 
-        # Uniqueness check (case-insensitive)
-        with connections[OT_DB_ALIAS].cursor() as cur:
-            cur.execute(f"SELECT 1 FROM {PLAYERS_TBL} WHERE LOWER(name)=LOWER(%s) LIMIT 1", [name])
-            if cur.fetchone():
-                form.add_error("name", "That name is already taken.")
-                return render(request, "pages/account_character_create.html", {"form": form})
+        # Uniqueness check (case-insensitive) using DB helper
+        row = db.run(
+            "select_one",
+            f"SELECT 1 FROM {PLAYERS_TBL} WHERE LOWER(name)=LOWER(:n) LIMIT 1",
+            {"n": name},
+        )
+        if row:
+            form.add_error("name", "That name is already taken.")
+            return render(request, "pages/account_character_create.html", {"form": form})
 
         # Build a defaults map with sensible values, then only keep keys that exist in your schema
         defaults = {
@@ -1191,11 +1197,6 @@ def account_character_create(request):
 
             # Optional often-present columns
             "skull":            0,
-            #"shield":           0,
-            #"loss_experience":  100,
-            #"loss_mana":        100,
-            #"loss_skills":      100,
-            #"loss_containers":  100,
         }
 
         war_server = {
@@ -1211,12 +1212,12 @@ def account_character_create(request):
             "health":           int(getattr(settings, "WAR_OT_START_HEALTH", 185)),
             "healthmax":        int(getattr(settings, "WAR_OT_START_HEALTH", 185)),
             "mana":             int(getattr(settings, "WAR_OT_START_MANA", 35)),
-            "manamax":          int(getattr(settings, "WAR_OT_START_MANA", 35)),
+            "manamax":          int(getattr(settings, "WAR_OT_START_MANAMAX", 35)) if hasattr(settings, "WAR_OT_START_MANAMAX") else int(getattr(settings, "WAR_OT_START_MANA", 35)),
             "maglevel":         int(getattr(settings, "WAR_OT_START_MAGLEVEL", 0)),
             "cap":              int(getattr(settings, "WAR_OT_START_CAP", 470)),
             "soul":             int(getattr(settings, "WAR_OT_START_SOUL", 100)),
 
-            # Position (0/0/0 lets town spawn handle it on some engines; otherwise set your temple coords)
+            # Position
             "posx":             int(getattr(settings, "WAR_OT_START_POSX", 0)),
             "posy":             int(getattr(settings, "WAR_OT_START_POSY", 0)),
             "posz":             int(getattr(settings, "WAR_OT_START_POSZ", 0)),
@@ -1230,30 +1231,31 @@ def account_character_create(request):
 
             # Optional often-present columns
             "skull":            0,
-            "skill_axe":        10, #int(getattr(settings, "WAR_OT_START_AXE_SKILL", 0)),
-            "skill_club":       10, #int(getattr(settings, "WAR_OT_START_CLUB_SKILL", 0)),
-            "skill_sword":      10, #int(getattr(settings, "WAR_OT_START_SWORD_SKILL", 0)),
-            "skill_dist":       10, #int(getattr(settings, "WAR_OT_START_DISTANCE_SKILL", 0)),
-            "skill_shielding":  10, #int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0)),
+            "skill_axe":        10,
+            "skill_club":       10,
+            "skill_sword":      10,
+            "skill_dist":       10,
+            "skill_shielding":  10,
         }
 
+        # If WAR server enabled, mutate war_server in-place based on vocation.
         if settings.WAR_SERVER_ENABLED:
-            for k, v in war_server.items():
-                if k in cols:
-                    if k == "vocation":
-                        if v in [1, 2]:
-                            war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_MAGE_MAGIC_SKILL", 0))
-                        elif v == 3:
-                            war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_PALADIN_MAGIC_SKILL", 0))
-                            war_server["skill_dist"] = int(getattr(settings, "WAR_OT_START_DISTANCE_SKILL", 0))
-                            war_server["skill_shielding"] = int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0))
-                        elif v == 4:
-                            war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_KNIGHT_MAGIC_SKILL", 0))
-                            war_server["skill_axe"] = int(getattr(settings, "WAR_OT_START_AXE_SKILL", 0))
-                            war_server["skill_club"] = int(getattr(settings, "WAR_OT_START_CLUB_SKILL", 0))
-                            war_server["skill_sword"] = int(getattr(settings, "WAR_OT_START_SWORD_SKILL", 0))
-                            war_server["skill_shielding"] = int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0))
-                    
+            # adjust mage/paladin/knight starting skills by vocation
+            v = war_server.get("vocation")
+            if v in (1, 2):
+                war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_MAGE_MAGIC_SKILL", 0))
+            elif v == 3:
+                war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_PALADIN_MAGIC_SKILL", 0))
+                war_server["skill_dist"] = int(getattr(settings, "WAR_OT_START_DISTANCE_SKILL", 0))
+                war_server["skill_shielding"] = int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0))
+            elif v == 4:
+                war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_KNIGHT_MAGIC_SKILL", 0))
+                war_server["skill_axe"] = int(getattr(settings, "WAR_OT_START_AXE_SKILL", 0))
+                war_server["skill_club"] = int(getattr(settings, "WAR_OT_START_CLUB_SKILL", 0))
+                war_server["skill_sword"] = int(getattr(settings, "WAR_OT_START_SWORD_SKILL", 0))
+                war_server["skill_shielding"] = int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0))
+
+            # pick only columns that exist in schema
             data = {k: v for k, v in war_server.items() if k in cols}
         else:
             data = {k: v for k, v in defaults.items() if k in cols}
@@ -1261,26 +1263,21 @@ def account_character_create(request):
         # Final safety: required minimum
         for required in ("name", ACC_COL, "vocation", "sex", "town_id"):
             if required not in data:
-                # If your schema is unusual, tell yourself why:
                 log.error("Missing required column on players table: %s", required)
                 messages.error(request, f"Server is missing required column '{required}' in '{PLAYERS_TBL}'.")
                 return render(request, "pages/account_character_create.html", {"form": form})
 
-
-        cur.execute(f"SELECT COUNT(*) FROM {PLAYERS_TBL} WHERE {ACC_COL}=%s", [ot_account_id])
-        if cur.fetchone()[0] >= 5:
+        # Check character limit for account using DB helper
+        cnt = int(db.run("scalar", f"SELECT COUNT(*) FROM {PLAYERS_TBL} WHERE {ACC_COL} = :acc", {"acc": ot_account_id}) or 0)
+        if cnt >= 5:
             form.add_error(None, "You reached the character limit on this account.")
             return render(request, "pages/account_character_create.html", {"form": form})
-        # Insert
-        field_list = list(data.keys())
-        placeholders = ", ".join(["%s"] * len(field_list))
-        sql = f"INSERT INTO {PLAYERS_TBL} ({', '.join(field_list)}) VALUES ({placeholders})"
-        params = [data[f] for f in field_list]
 
+        # Insert using DB helper inside atomic transaction
         try:
-            with transaction.atomic(using=OT_DB_ALIAS):
-                with connections[OT_DB_ALIAS].cursor() as cur:
-                    cur.execute(sql, params)
+            with db.atomic():
+                # Use db.insert which builds the SQL and arguments safely
+                db.insert(PLAYERS_TBL, data)
         except Exception:
             log.exception("Failed to insert character '%s' for account %s", name, ot_account_id)
             messages.error(request, "Couldn’t create your character. Please try again.")

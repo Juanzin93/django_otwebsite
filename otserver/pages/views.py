@@ -1137,7 +1137,7 @@ def _players_columns():
 @login_required
 def account_character_create(request):
     # We stored this on login in your auth backend:
-    ot_account_id = request.session.get("ot_account_id")
+    ot_account_id = request.user.username
     if not ot_account_id:
         messages.error(request, "Your OT account session is missing. Please log in again.")
         return redirect("login")

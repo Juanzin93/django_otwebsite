@@ -58,7 +58,7 @@ class CreateCharacterForm(forms.Form):
     else:
         vocation = forms.TypedChoiceField(choices=[(0, "None")], coerce=int)
     sex = forms.TypedChoiceField(choices=SEX_CHOICES, coerce=int)
-    town_id = forms.IntegerField(min_value=1, required=False)
+    #town_id = forms.IntegerField(min_value=1, required=False)
 
     def clean_name(self):
         n = self.cleaned_data["name"].strip()

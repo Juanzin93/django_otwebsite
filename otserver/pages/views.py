@@ -1246,16 +1246,35 @@ def account_character_create(request):
             v = war_server.get("vocation")
             if v in (1, 2):
                 war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_MAGE_MAGIC_SKILL", 0))
+
+                war_server["healthmax"] = int(getattr(settings, "WAR_OT_START_HEALTH", 185)) + (5 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["health"] = int(getattr(settings, "WAR_OT_START_HEALTH", 185)) + (5 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["mana"] = int(getattr(settings, "WAR_OT_START_MANA", 35)) + (30 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["manamax"] = int(getattr(settings, "WAR_OT_START_MANAMAX", 35)) + (30 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["cap"] = int(getattr(settings, "WAR_OT_START_CAP", 470)) + (10 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+
             elif v == 3:
                 war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_PALADIN_MAGIC_SKILL", 0))
                 war_server["skill_dist"] = int(getattr(settings, "WAR_OT_START_DISTANCE_SKILL", 0))
                 war_server["skill_shielding"] = int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0))
+
+                war_server["healthmax"] = int(getattr(settings, "WAR_OT_START_HEALTH", 185)) + (10 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["health"] = int(getattr(settings, "WAR_OT_START_HEALTH", 185)) + (10 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["mana"] = int(getattr(settings, "WAR_OT_START_MANA", 35)) + (15 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["manamax"] = int(getattr(settings, "WAR_OT_START_MANAMAX", 35)) + (15 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["cap"] = int(getattr(settings, "WAR_OT_START_CAP", 470)) + (20 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
             elif v == 4:
                 war_server["maglevel"] = int(getattr(settings, "WAR_OT_START_KNIGHT_MAGIC_SKILL", 0))
                 war_server["skill_axe"] = int(getattr(settings, "WAR_OT_START_AXE_SKILL", 0))
                 war_server["skill_club"] = int(getattr(settings, "WAR_OT_START_CLUB_SKILL", 0))
                 war_server["skill_sword"] = int(getattr(settings, "WAR_OT_START_SWORD_SKILL", 0))
                 war_server["skill_shielding"] = int(getattr(settings, "WAR_OT_START_SHIELDING_SKILL", 0))
+
+                war_server["healthmax"] = int(getattr(settings, "WAR_OT_START_HEALTH", 185)) + (15 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["health"] = int(getattr(settings, "WAR_OT_START_HEALTH", 185)) + (15 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["mana"] = int(getattr(settings, "WAR_OT_START_MANA", 35)) + (5 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["manamax"] = int(getattr(settings, "WAR_OT_START_MANAMAX", 35)) + (5 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
+                war_server["cap"] = int(getattr(settings, "WAR_OT_START_CAP", 470)) + (25 * (int(getattr(settings, "WAR_OT_START_LEVEL", 8)) - 1))
 
             # pick only columns that exist in schema
             data = {k: v for k, v in war_server.items() if k in cols}

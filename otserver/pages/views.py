@@ -1147,7 +1147,7 @@ def account_character_create(request):
         name     = form.cleaned_data["name"].strip()
         vocation = form.cleaned_data["vocation"]
         sex      = form.cleaned_data["sex"]
-        if WAR_SERVER_ENABLED:
+        if settings.WAR_SERVER_ENABLED:
             town_id  = getattr(settings, "WAR_OT_DEFAULT_TOWN_ID", 1)
         else:
             town_id  = getattr(settings, "OT_DEFAULT_TOWN_ID", 1) #form.cleaned_data.get("town_id") or getattr(settings, "OT_DEFAULT_TOWN_ID", 1)

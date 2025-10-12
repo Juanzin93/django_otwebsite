@@ -109,7 +109,7 @@ def news(request):
     return render(request, "pages/news.html", {})
 
 def gallery(request):
-    yt_ids = ["78n9H3Pxt8s", "-4n3egV13GE"]
+    yt_ids = []#["78n9H3Pxt8s", "-4n3egV13GE"]
     return render(request, "pages/gallery.html", {"yt_ids": yt_ids})
 
 def signup(request):

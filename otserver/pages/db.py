@@ -486,3 +486,79 @@ class DB:
             else:
                 parts.append(f"{key} = %s"); args.append(val)
         return " AND ".join(parts) if parts else "1=1", args
+
+    def _detect_premium_schema(self):
+        """
+        Detect where premium is stored.
+        Returns one of:
+        {"table": "accounts", "mode": "days", "col": "premdays"}
+        {"table": "accounts", "mode": "until", "col": "premend"}  # unix int or datetime
+        {"table": "accounts", "mode": "until_dt", "col": "premium_ends_at"}  # datetime
+        {"table": "players",  "mode": "days", "col": "premdays"}  # very old schemas
+        or None if nothing found.
+        """
+        def columns(t): 
+            try: return set(self._columns(t))
+            except Exception: return set()
+
+        # Preferred: accounts.* first
+        if "accounts" in (self._table_exists("accounts") and ["accounts"] or []):
+            cols = columns("accounts")
+            if "premdays" in cols:
+                return {"table": "accounts", "mode": "days", "col": "premdays"}
+            # some forks: premend int(11) unix seconds
+            if "premend" in cols:
+                # we won’t over-detect datatype—handle both int/datetime in logic
+                return {"table": "accounts", "mode": "until", "col": "premend"}
+            if "premium_ends_at" in cols:
+                return {"table": "accounts", "mode": "until_dt", "col": "premium_ends_at"}
+
+        # Fallback: players.premdays (very old)
+        if "players" in (self._table_exists("players") and ["players"] or []):
+            cols = columns("players")
+            if "premdays" in cols and "account_id" in cols:
+                return {"table": "players", "mode": "days", "col": "premdays"}
+
+        return None
+
+
+    def grant_premium_days(self, account_id: int, days: int) -> int:
+        """
+        Grants `days` of premium to an account, supporting multiple schemas.
+        Returns the number of rows updated.
+        """
+        schema = self._detect_premium_schema()
+        if not schema or days <= 0:
+            return 0
+
+        t, mode, col = schema["table"], schema["mode"], schema["col"]
+
+        if t == "accounts":
+            if mode == "days":
+                # Simple counter
+                return self.run("execute",
+                    f"UPDATE accounts SET {col} = COALESCE({col},0) + %s WHERE id = %s",
+                    [int(days), int(account_id)]
+                )
+            elif mode in ("until", "until_dt"):
+                # Extend end-time: end = GREATEST(current_end, NOW) + INTERVAL days DAY
+                # Handle unix-int or datetime in one shot by normalizing to datetime in SQL.
+                # Try to detect int vs datetime by information_schema—keep it simple with SQL:
+                # CASE WHEN looks like a unix int -> FROM_UNIXTIME(col) else treat as datetime.
+                return self.run("execute", f"""
+                    UPDATE accounts
+                    SET {col} = (
+                            CASE
+                            WHEN {col} IS NULL THEN DATE_ADD(CURRENT_TIMESTAMP, INTERVAL %s DAY)
+                            WHEN {col} > FROM_UNIXTIME(0) THEN DATE_ADD({col}, INTERVAL %s DAY)
+                            ELSE DATE_ADD(FROM_UNIXTIME({col}), INTERVAL %s DAY)
+                            END
+                    )
+                    WHERE id = %s
+                """, [days, days, days, int(account_id)])
+        else:
+            # players.premdays for all characters in this account
+            return self.run("execute",
+                f"UPDATE players SET {col} = COALESCE({col},0) + %s WHERE account_id = %s",
+                [int(days), int(account_id)]
+            )

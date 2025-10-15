@@ -855,30 +855,26 @@ def signup(request):
 
         # 1) Insert into OT using the exact id provided by the user
         try:
-            with transaction.atomic(using=OT_DB_ALIAS):
-                with connections[OT_DB_ALIAS].cursor() as cur:
-                    # Ensure the id is free
-                    cur.execute(f"SELECT 1 FROM {OT_ACCOUNT_TABLE} WHERE id=%s LIMIT 1", [account_id])
-                    if cur.fetchone():
-                        form.add_error("account_id", "That account number is already in use.")
-                        return render(request, "pages/signup.html", {"form": form})
+            with db.atomic():
+                # Ensure the id is free
+                exists = db.run(
+                    "scalar",
+                    f"SELECT 1 FROM {OT_ACCOUNT_TABLE} WHERE id=%s LIMIT 1",
+                    [account_id],
+                    default=None,
+                )
+                if exists:
+                    form.add_error("account_id", "That account number is already in use.")
+                    return render(request, "pages/signup.html", {"form": form})
 
-                    cols = ["id", OT_PASSWORD_COL]
-                    vals = ["%s", "%s"]
-                    params = [account_id, hashed]
+                # Build insert data
+                data = {"id": account_id, OT_PASSWORD_COL: hashed}
+                if OT_EMAIL_COL:
+                    data[OT_EMAIL_COL] = email
 
-                    if OT_EMAIL_COL:
-                        cols.append(OT_EMAIL_COL)
-                        vals.append("%s")
-                        params.append(email)
-
-                    #if OT_BLOCKED_COL:
-                    #    cols.append(OT_BLOCKED_COL)
-                    #    vals.append("%s")
-                    #    params.append(0)  # unblocked by default
-
-                    sql = f"INSERT INTO {OT_ACCOUNT_TABLE} ({', '.join(cols)}) VALUES ({', '.join(vals)})"
-                    cur.execute(sql, params)
+                # Insert the account
+                db.insert(OT_ACCOUNT_TABLE, data)
+                db.grant_premium_days(account_id, settings.OT_SIGNUP_PREMIUM_DAYS)
         except Exception:
             log.exception("OT INSERT failed for id=%s", account_id)
             form.add_error(None, "We couldn’t create your game account. Please try again.")

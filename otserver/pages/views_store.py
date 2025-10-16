@@ -27,7 +27,7 @@ PACKS: List[Pack] = [
     Pack("25",  25, "5.00",  "25.00",  bonus=0,  stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C25"),  stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C25")),
     Pack("50",  50, "10.00", "50.00",  bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C50"),  stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C50")),
     Pack("100",100, "20.00", "100.00", bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C100"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C100")),
-    Pack("250",200,"50.00", "250.00", bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C250"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C250")),
+    Pack("250",250,"50.00", "250.00", bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C250"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C250")),
     Pack("550",550,"100.00", "500.00", bonus=0, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C550"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C550")),
     Pack("1100",1100,"200.00", "1000.00", bonus=10, stripe_price_usd=os.getenv("STRIPE_PRICE_USD_C1100"), stripe_price_brl=os.getenv("STRIPE_PRICE_BRL_C1100")),
 ]

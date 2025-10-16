@@ -1,0 +1,38 @@
+<!-- templates/pages/buy_landing.html -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: ui-sans-serif,system-ui,Segoe UI,Roboto,Ubuntu; background:#0b1220; color:#e5e7eb; padding:24px; }
+    .card { max-width:420px; margin:0 auto; background:#111827; border:1px solid #1f2937; border-radius:12px; padding:20px; }
+    label { display:block; margin-bottom:6px; color:#cbd5e1; }
+    input[type="text"]{ width:100%; padding:10px 12px; border-radius:8px; border:1px solid #374151; background:#0b1220; color:#e5e7eb; }
+    .row { display:flex; gap:10px; margin-top:14px; align-items:center; }
+    .muted { opacity:.8; font-size:.9rem; }
+    button { padding:10px 14px; border:0; border-radius:8px; background:#2563eb; color:#fff; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 style="margin:0 0 10px 0;">{{ title }}</h2>
+    <form method="post">
+      {% csrf_token %}
+      <label for="player_name">Character name</label>
+      <input id="player_name" name="player_name" type="text" placeholder="e.g., Knight Juan" maxlength="32" required>
+
+      <div class="row">
+        <div class="muted">Currency:</div>
+        <strong>{{ currency }}</strong>
+      </div>
+
+      <div class="row" style="justify-content:flex-end;">
+        <button type="submit">{{ submit_label }}</button>
+      </div>
+    </form>
+  </div>
+  <script>document.getElementById('player_name')?.focus();</script>
+</body>
+</html>

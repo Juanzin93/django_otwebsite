@@ -86,6 +86,9 @@ urlpatterns = [
     path("store/success/", views_store.store_success, name="store_success"),
     path("store/cancel/", views_store.store_cancel, name="store_cancel"),
 
+    
+    path("buy/item/<slug:aid>", views_store.buy_item_landing, name="buy_item_landing"),
+
     path("last-kills/", views.last_kills, name="last_kills"),
     path("team/", views.team, name="team"),
     path("bans/", views_bans.bans_list, name="bans_list"),

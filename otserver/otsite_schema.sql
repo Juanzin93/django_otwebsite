@@ -134,3 +134,20 @@ CREATE TABLE IF NOT EXISTS pix_tx (
   expires_at    INT,
   UNIQUE KEY unique_provider_ext (provider, external_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS store_orders (
+  id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+  account_id    INT NOT NULL,
+  player_name   VARCHAR(64) DEFAULT NULL, -- optional: force to a specific char
+  itemid        INT NOT NULL,
+  actionid      INT NOT NULL,
+  count         INT NOT NULL DEFAULT 1,
+  town_id       INT NOT NULL DEFAULT 1,   -- Thais is commonly town 1; adjust if needed
+  method        VARCHAR(32) NOT NULL,     -- 'stripe' | 'paypal' | ...
+  txid          VARCHAR(64) NOT NULL,     -- payment or checkout session id
+  status        ENUM('pending','delivered','failed') NOT NULL DEFAULT 'pending',
+  error_msg     TEXT NULL,
+  created_at    INT NOT NULL,
+  delivered_at  INT NULL,
+  UNIQUE KEY uniq_tx (txid, actionid)     -- idempotency across retries
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

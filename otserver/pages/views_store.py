@@ -166,7 +166,7 @@ def create_checkout_session(request):
         cancel_url=request.build_absolute_uri(reverse("store_cancel")),
         metadata={
             "user_id": str(request.user.id),
-            "ot_account_id": str(acc_id),
+            "ot_account_id": int(acc_id),
             "pack_id": pack.id,
             "coins": str(pack.coins),
             "currency": currency,
@@ -176,26 +176,66 @@ def create_checkout_session(request):
     return JsonResponse({"id": session.id})
 
 # ---------- Items: landing page that asks for Character Name ----------
+ITEM_NAME: Dict[str, str] = {
+    "80085": "Retrowar Pack Tier 1",
+    "80086": "Retrowar Pack Tier 2",
+    "80087": "Retrowar Pack Tier 3",
+}
+
+STARTER_AIDS = (80085, 80086, 80087)
+
+def _account_already_bought_starter(account_id: int) -> bool:
+    """
+    Returns True if this account has already purchased a starter pack.
+    We consider any existing store_orders row for starter actionids
+    with status pending or delivered as 'already bought'.
+    """
+    row = db.run("select_one", """
+        SELECT id
+          FROM store_orders
+         WHERE account_id = %s
+           AND actionid IN (80085, 80086, 80087)
+           AND status IN ('pending','delivered')
+         LIMIT 1
+    """, [account_id])
+    return bool(row)
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def buy_item_landing(request, aid: str):
-    """TinyMCE links to /buy/item/<aid>?currency=USD|BRL.
-       GET -> show small form for Character Name
-       POST -> create Checkout Session with player_name + actionid in metadata
     """
-    currency = (request.GET.get("currency") or "USD").upper()
-    currency = "BRL" if currency == "BRL" else "USD"
+    TinyMCE links to /buy/item/<aid>
+    GET  -> show form (character name + currency select), but disable if already bought
+    POST -> create Stripe Checkout Session using chosen currency (only if not already bought)
+    """
+    # normalize currency (GET preselect)
+    preselect_currency = (request.GET.get("currency") or "USD").upper()
+    if preselect_currency not in ("USD", "BRL"):
+        preselect_currency = "USD"
+
+    acc_id = request.user.username
+    already_bought = _account_already_bought_starter(int(acc_id))
 
     if request.method == "GET":
-        return render(request, "pages/buy_landing.html", {
-            "title": f"Buy Item (AID {aid})",
-            "currency": currency,
-            "submit_label": f"Continue to pay {currency}",
+        return render(request, "pages/buy_item_landing.html", {
+            "aid": aid,
+            "title": f"Buy {ITEM_NAME[aid]}",
+            "currency": preselect_currency,
+            "submit_label": "Continue to payment",
+            "already_bought": already_bought,
         })
 
+    # POST
+    if already_bought:
+        # Double-check on POST to avoid race conditions
+        return HttpResponseForbidden("This account has already purchased a starter pack.")
+
     player_name = (request.POST.get("player_name") or "").strip()
+    currency    = (request.POST.get("currency") or "USD").upper()
     if not player_name:
         return HttpResponseBadRequest("Missing character name")
+    if currency not in ("USD", "BRL"):
+        return HttpResponseBadRequest("Invalid currency")
 
     mapping = ITEM_PRICES_BY_AID.get(str(aid))
     if not mapping:
@@ -205,7 +245,6 @@ def buy_item_landing(request, aid: str):
     if not price_id:
         return HttpResponseBadRequest("Stripe price not configured")
 
-    acc_id = request.user.username
     pm_types = ["card"]
     if currency == "BRL" and getattr(settings, "STRIPE_PIX_ENABLED", False):
         pm_types = ["card", "pix"]
@@ -213,17 +252,17 @@ def buy_item_landing(request, aid: str):
     session = stripe.checkout.Session.create(
         mode="payment",
         payment_method_types=pm_types,
-        line_items=[{ "price": price_id, "quantity": 1 }],
+        line_items=[{"price": price_id, "quantity": 1}],
         success_url=request.build_absolute_uri(reverse("store_success")),
         cancel_url=request.build_absolute_uri(reverse("store_cancel")),
         metadata={
             "user_id": str(request.user.id),
-            "ot_account_id": str(acc_id),
+            "ot_account_id": int(acc_id),
             "currency": currency,
-            "player_name": player_name,   # ONLY items need char name
+            "player_name": player_name,   # item-only
             "actionid": str(aid),
             "town_id": str(DEFAULT_TOWN_ID),
-        }
+        },
     )
     return redirect(session.url, permanent=False)
 
@@ -254,14 +293,14 @@ def stripe_webhook(request):
         acc_id = None
         coins  = 0
         try:
-            acc_id = int(md.get("ot_account_id")) if md.get("ot_account_id") else None
+            # Prefer explicit ot_account_id, else fall back to user_id
+            raw_acc = md.get("ot_account_id") or md.get("user_id")
+            acc_id = int(raw_acc) if raw_acc is not None else None
             coins  = int(md.get("coins") or 0)
         except Exception:
-            pass
-
+            acc_id, coins = None, 0
         if acc_id and coins > 0:
             _credit_coins(acc_id, coins, txid, method="stripe")
-
         # 2) Items (require character name when coming from /buy/item/..., but also support price-id mapping)
         # 2a) If metadata includes actionid (our landing flow), use it directly
         actionid = None
@@ -445,10 +484,9 @@ def paypal_capture(request):
     return JsonResponse({"ok": False, "error": "Not completed"}, status=400)
 
 # ---------- Result pages ----------
-@login_required
+
 def store_success(request):
     return render(request, "pages/store_success.html")
 
-@login_required
 def store_cancel(request):
     return render(request, "pages/store_cancel.html")

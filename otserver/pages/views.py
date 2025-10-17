@@ -861,7 +861,7 @@ def signup(request):
                     "scalar",
                     f"SELECT 1 FROM {OT_ACCOUNT_TABLE} WHERE id=%s LIMIT 1",
                     [account_id],
-                    default=None,
+                    
                 )
                 if exists:
                     form.add_error("account_id", "That account number is already in use.")

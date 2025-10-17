@@ -46,20 +46,20 @@ def _pack_by_id(pid:str)->Optional[Pack]:
 # (A) If you’re linking from TinyMCE to /buy/item/<actionid>, we map actionid -> price ids here:
 ITEM_PRICES_BY_AID: Dict[str, Dict[str, str]] = {
     # actionid: { price_usd, price_brl }
-    "80085": {"price_usd": "price_1SIv0RP5F3OJyKcMv7HQpvDy", "price_brl": "price_1SIuziP5F3OJyKcMukAbzvlq"},
-    "80086": {"price_usd": "price_1SIv4SP5F3OJyKcMuf1c7ujK", "price_brl": "price_1SIv2uP5F3OJyKcMAqYzKHT3"},
-    "80087": {"price_usd": "price_1SIvCnP5F3OJyKcMCYcCITTh", "price_brl": "price_1SIvDFP5F3OJyKcMAU8DXifx"},
+    "58008": {"price_usd": "price_1SIv0RP5F3OJyKcMv7HQpvDy", "price_brl": "price_1SIuziP5F3OJyKcMukAbzvlq"},
+    "58007": {"price_usd": "price_1SIv4SP5F3OJyKcMuf1c7ujK", "price_brl": "price_1SIv2uP5F3OJyKcMAqYzKHT3"},
+    "58006": {"price_usd": "price_1SIvCnP5F3OJyKcMCYcCITTh", "price_brl": "price_1SIvDFP5F3OJyKcMAU8DXifx"},
 }
 
 # (B) If you sell via Stripe Payment Links, map *price id* -> delivery spec:
 ITEM_SPECS_BY_PRICE: Dict[str, Dict[str, int]] = {
     # price_id: {itemid, actionid, count, town_id}
-    "price_1SIv0RP5F3OJyKcMv7HQpvDy": {"itemid": 5837, "actionid": 80085, "count": 1, "town_id": 1},
-    "price_1SIuziP5F3OJyKcMukAbzvlq": {"itemid": 5837, "actionid": 80085, "count": 1, "town_id": 1},
-    "price_1SIv4SP5F3OJyKcMuf1c7ujK": {"itemid": 5837, "actionid": 80086, "count": 1, "town_id": 1},
-    "price_1SIv2uP5F3OJyKcMAqYzKHT3": {"itemid": 5837, "actionid": 80086, "count": 1, "town_id": 1},
-    "price_1SIvCnP5F3OJyKcMCYcCITTh": {"itemid": 5837, "actionid": 80087, "count": 1, "town_id": 1},
-    "price_1SIvDFP5F3OJyKcMAU8DXifx": {"itemid": 5837, "actionid": 80087, "count": 1, "town_id": 1},
+    "price_1SIv0RP5F3OJyKcMv7HQpvDy": {"itemid": 5837, "actionid": 58008, "count": 1, "town_id": 1},
+    "price_1SIuziP5F3OJyKcMukAbzvlq": {"itemid": 5837, "actionid": 58008, "count": 1, "town_id": 1},
+    "price_1SIv4SP5F3OJyKcMuf1c7ujK": {"itemid": 5837, "actionid": 58007, "count": 1, "town_id": 1},
+    "price_1SIv2uP5F3OJyKcMAqYzKHT3": {"itemid": 5837, "actionid": 58007, "count": 1, "town_id": 1},
+    "price_1SIvCnP5F3OJyKcMCYcCITTh": {"itemid": 5837, "actionid": 58006, "count": 1, "town_id": 1},
+    "price_1SIvDFP5F3OJyKcMAU8DXifx": {"itemid": 5837, "actionid": 58006, "count": 1, "town_id": 1},
 }
 
 DEFAULT_TOWN_ID = 1  # Thais
@@ -177,12 +177,12 @@ def create_checkout_session(request):
 
 # ---------- Items: landing page that asks for Character Name ----------
 ITEM_NAME: Dict[str, str] = {
-    "80085": "Retrowar Pack Tier 1",
-    "80086": "Retrowar Pack Tier 2",
-    "80087": "Retrowar Pack Tier 3",
+    "58008": "Retrowar Pack Tier 1",
+    "58007": "Retrowar Pack Tier 2",
+    "58006": "Retrowar Pack Tier 3",
 }
 
-STARTER_AIDS = (80085, 80086, 80087)
+STARTER_AIDS = (58008, 58007, 58006)
 
 def _account_already_bought_starter(account_id: int) -> bool:
     """
@@ -191,13 +191,13 @@ def _account_already_bought_starter(account_id: int) -> bool:
     with status pending or delivered as 'already bought'.
     """
     row = db.run("select_one", """
-        SELECT id
+        SELECT *
           FROM store_orders
          WHERE account_id = %s
-           AND actionid IN (80085, 80086, 80087)
-           AND status IN ('pending','delivered')
-         LIMIT 1
     """, [account_id])
+
+    print("DB check already bought starter:", row)
+    print("DB check already bought starter (account_id):", account_id)
     return bool(row)
 
 @login_required
@@ -215,6 +215,7 @@ def buy_item_landing(request, aid: str):
 
     acc_id = request.user.username
     already_bought = _account_already_bought_starter(int(acc_id))
+    print("Already bought?", already_bought)
 
     if request.method == "GET":
         return render(request, "pages/buy_item_landing.html", {
@@ -333,7 +334,7 @@ def stripe_webhook(request):
 
             # Fallback: if we didn’t map via price, set a default itemid you sell with these actionids
             if not itemid:
-                itemid = 5837  # <— default itemid used for 80085/80086/80087; change if needed
+                itemid = 5837  # <— default itemid used for 58008/58007/58006; change if needed
 
             _queue_depot_item(
                 account_id=acc_id,

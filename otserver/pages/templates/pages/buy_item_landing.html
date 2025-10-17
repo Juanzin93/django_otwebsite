@@ -28,10 +28,13 @@
         <option value="USD" {% if currency == "USD" %}selected{% endif %}>USD</option>
         <option value="BRL" {% if currency == "BRL" %}selected{% endif %}>BRL</option>
       </select>
-
-      <div class="row">
-        <button type="submit">{{ submit_label }}</button>
-      </div>
+      {% if not already_bought %}
+        <div class="row">
+          <button type="submit">{{ submit_label }}</button>
+        </div>
+      {% else %}
+        <p style="color:#f87171; text-align:center; margin-top:20px;">You have already purchased this item.</p>
+      {% endif %}
     </form>
   </div>
   <script>document.getElementById('player_name')?.focus();</script>

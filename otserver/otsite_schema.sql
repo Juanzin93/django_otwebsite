@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS store_orders (
   count         INT NOT NULL DEFAULT 1,
   town_id       INT NOT NULL DEFAULT 1,   -- Thais is commonly town 1; adjust if needed
   method        VARCHAR(32) NOT NULL,     -- 'stripe' | 'paypal' | ...
-  txid          VARCHAR(64) NOT NULL,     -- payment or checkout session id
+  txid          VARCHAR(255) NOT NULL,     -- payment or checkout session id
   status        ENUM('pending','delivered','failed') NOT NULL DEFAULT 'pending',
   error_msg     TEXT NULL,
   created_at    INT NOT NULL,

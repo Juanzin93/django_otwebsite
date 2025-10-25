@@ -5,7 +5,7 @@ set -euo pipefail
 # Domain / site
 DOMAIN="retrowarot.com"                   # e.g. retrowarot.com (for HTTPS & ALLOWED_HOSTS)
 SERVER_ADMIN="admin@${DOMAIN}"
-
+DEPLOY_USER="${SUDO_USER:-$(logname 2>/dev/null || whoami)}"
 # Where to deploy
 APP_ROOT="/srv/django_otwebsite"          # deployment root
 DJANGO_DIR="otserver"                     # folder containing manage.py
@@ -16,11 +16,11 @@ REPO_URL="https://github.com/Juanzin93/django_otwebsite.git"
 
 # Database (created locally)
 DB_NAME="retrowar"
-DB_USER="retrowar"
+DB_USER="juanzin"
 DB_PASS="rionovo123"
 
 # Django admin (optional auto-create)
-ADMIN_USER="admin"
+ADMIN_USER="juanzin"
 ADMIN_EMAIL="admin@${DOMAIN}"
 ADMIN_PASS="rionovo123"     # will set after createsuperuser --noinput
 
@@ -63,22 +63,22 @@ SQL
 
 echo "==> Preparing app directory: ${APP_ROOT}"
 mkdir -p "${APP_ROOT}"
-chown -R "$SUDO_USER":"$SUDO_USER" "${APP_ROOT}"
+chown -R "$DEPLOY_USER":"$DEPLOY_USER" "${APP_ROOT}"
 cd "${APP_ROOT}"
 
 if [ ! -d .git ]; then
   echo "==> Cloning repo: ${REPO_URL}"
-  sudo -u "$SUDO_USER" git clone "${REPO_URL}" .
+  sudo -u "$DEPLOY_USER" git clone "${REPO_URL}" .
 else
   echo "==> Repo exists, pulling latest"
-  sudo -u "$SUDO_USER" git pull --rebase
+  sudo -u "$DEPLOY_USER" git pull --rebase
 fi
 
 echo "==> Creating virtualenv"
 ${PY} -m venv .venv
 source .venv/bin/activate
 pip install -U pip wheel
-
+python -m pip install -U django-tinymce
 echo "==> Installing Python deps"
 if [ -f requirements.txt ]; then
   pip install -r requirements.txt
@@ -92,7 +92,7 @@ SECRET_KEY="$(openssl rand -hex 32)"
 ENV_PATH="${APP_ROOT}/${DJANGO_DIR}/.env"
 cat > "${ENV_PATH}" <<ENV
 # --- Database ---# 
-.env file for django_otwebsite/otserver
+#.env file for django_otwebsite/otserver
 DEFAULT_FROM_EMAIL=Retrowar OT <no-reply@retrowarot.com>
 SUPPORT_EMAIL=support@retrowarot.com
 
@@ -107,8 +107,8 @@ EMAIL_BACKEND="pages.mail_backends.GraphEmailBackend"
 # Database configuration
 DB_NAME=retrowar
 DB_USER=juanzin
-DB_PASSWORD=1234
-DB_HOST=192.168.1.138
+DB_PASSWORD=rionovo123
+DB_HOST=127.0.0.1
 DB_PORT=3306
 
 # ---- Stripe ----
@@ -184,7 +184,6 @@ ENV
 echo "==> Ensuring STATIC_ROOT and API folders exist"
 STATIC_ROOT="${APP_ROOT}/${DJANGO_DIR}/static_collected"
 mkdir -p "${STATIC_ROOT}"
-
 # *** NEW: Ensure API folder exists for OTClient updater downloads ***
 API_DIR="${APP_ROOT}/${DJANGO_DIR}/api"
 mkdir -p "${API_DIR}"
@@ -199,17 +198,19 @@ python manage.py collectstatic --noinput
 
 echo "==> Creating superuser (non-interactive)"
 python manage.py createsuperuser --noinput --username "${ADMIN_USER}" --email "${ADMIN_EMAIL}" || true
-python - <<PY
-import os
+python - <<'PY'
+import os, django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE","main.settings")
+django.setup()
+
 from django.contrib.auth import get_user_model
-User=get_user_model()
-u=User.objects.get(username="${ADMIN_USER}")
-u.set_password("${ADMIN_PASS}")
-u.is_staff=True
-u.is_superuser=True
+User = get_user_model()
+u, created = User.objects.get_or_create(username="admin", defaults={"email":"admin@retrowarot.com"})
+u.set_password("rionovo123")
+u.is_staff = True
+u.is_superuser = True
 u.save()
-print("Superuser ensured:", u.username)
+print("Superuser ensured. Created:", created)
 PY
 
 echo "==> Apache vhost configuration"

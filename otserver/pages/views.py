@@ -13,6 +13,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.safestring import mark_safe
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import F
 from django.utils.timezone import now
@@ -20,9 +21,10 @@ from django.db import connections, transaction
 import time
 import hashlib
 import logging
+import json
 
 from typing import Dict, List, Optional
-from .forms import EmailUpdateForm, SignUpForm, CreateCharacterForm
+from .forms import EmailUpdateForm, SignUpForm, CreateCharacterForm, VOCATION_CHOICES
 from .server_status import query_ot_status, query_ot_players
 from .db import DB
 from .items_service import SLOT_NAMES
@@ -137,20 +139,39 @@ def highscores(request):
     if selected_vocation not in VOCATIONS:
         selected_vocation = "all"
 
-    # base query
+    # NEW: world filter
+    world_param = request.GET.get("world")  # e.g. "2" or "all"
+    selected_world_id = None
+    if world_param and world_param.lower() != "all":
+        try:
+            selected_world_id = int(world_param)
+        except ValueError:
+            selected_world_id = None
+
+    # load worlds for sidebar
+    worlds = db.run("select", "SELECT id, name FROM worlds ORDER BY id", {}) or []
+
+    # --- base query (now with WHERE that we build up) ---
     base_sql = """
         SELECT p.*, a.country
           FROM players p
      LEFT JOIN accounts a ON a.id = p.account_id
+        WHERE p.deletion = 0
     """
 
     params = []
+
+    # vocation filter
     if VOC_GROUPS[selected_vocation]:
-        ids = VOC_GROUPS[selected_vocation]
-        # turn IN list into placeholders
+        ids = VOC_GROUPS[selected_vocation]  # e.g. [1,2] for mages, etc.
         ph = ", ".join(["%s"] * len(ids))
-        base_sql += f" WHERE p.vocation IN ({ph})"
+        base_sql += f" AND p.vocation IN ({ph})"
         params.extend(ids)
+
+    # NEW: world filter
+    if selected_world_id is not None:
+        base_sql += " AND p.world_id = %s"
+        params.append(selected_world_id)
 
     # order
     order_by = f"{SKILL_COLUMNS[selected_skill]} DESC, p.name ASC"
@@ -170,10 +191,18 @@ def highscores(request):
     end = min(meta["total_pages"], meta["page"] + window)
     page_range = range(start, end + 1)
 
-    # build querystring minus page (so your pager links can append &page=)
+    # build querystring minus page
     q = request.GET.copy()
     q.pop("page", None)
     querystring = q.urlencode()
+
+    # helpful label for template title
+    current_world_label = "All Worlds"
+    if selected_world_id is not None:
+        for w in worlds:
+            if int(w["id"]) == selected_world_id:
+                current_world_label = w["name"]
+                break
 
     return render(request, "pages/highscores.html", {
         "players": rows,
@@ -192,8 +221,12 @@ def highscores(request):
         "vocations": VOCATIONS,
         "selected_skill": selected_skill,
         "selected_vocation": selected_vocation,
-    })
 
+        # NEW for worlds
+        "worlds": worlds,                         # list of {"id":..,"name":..}
+        "selected_world_id": selected_world_id,   # int or None (= all)
+        "current_world_label": current_world_label,
+    })
 
 @require_GET
 def server_status(request):
@@ -259,17 +292,49 @@ def server_info(request):
     })
 
 
+
 def server_players(request):
+    # 1) Pick world (default = first world)
+    worlds = db.run("select", "SELECT id, name, ip, port"
+                             + (", status_port" if db._has_column("worlds", "status_port") else "")
+                             + " FROM worlds ORDER BY id", {}) or []
+    if worlds:
+        world_param = request.GET.get("world")
+        try:
+            selected_world_id = int(world_param) if world_param else int(worlds[0]["id"])
+        except (TypeError, ValueError):
+            selected_world_id = int(worlds[0]["id"])
+
+        # find world row (fallback to first)
+        w = next((w for w in worlds if int(w["id"]) == selected_world_id), worlds[0])
+        host = w.get("ip") or settings.OT_STATUS_HOST
+        # prefer an explicit status_port column; else try 'port'; else settings
+        status_port = (
+            w.get("status_port")
+            or w.get("port")
+            or getattr(settings, "OT_STATUS_PORT", 7171)
+        )
+        selected_world_meta = {"id": int(w["id"]), "name": w.get("name")}
+    else:
+        # no worlds table/rows → legacy single-world
+        host = settings.OT_STATUS_HOST
+        status_port = settings.OT_STATUS_PORT
+        selected_world_id = None
+        selected_world_meta = None
+
+    print(status_port)
+    # 2) Query live players for that world
     data = query_ot_players(
-        settings.OT_STATUS_HOST,
-        settings.OT_STATUS_PORT,
+        host,
+        int(status_port),
         getattr(settings, "OT_STATUS_TIMEOUT", 5.0),
         retries=1, backoff=1.0,
-    )
-    
+    ) or {"online": False, "list": []}
+
+    # 3) Enrich with DB (outfit, country, etc.)
     names = [p.get("name") for p in data.get("list", []) if p.get("name")]
     if names:
-        # Dedup
+        # Dedup while preserving order
         uniq = list({n: None for n in names}.keys())
 
         # Detect FK to accounts (account_id vs accountid)
@@ -282,7 +347,6 @@ def server_players(request):
             alias = alias or col
             return (f"{tbl}.{col} AS {alias}") if db._has_column("players", col) else (f"0 AS {alias}")
 
-        # Build SELECT pieces (fallback to 0 if column missing)
         sel_looktype   = col_or_zero("p", "looktype")
         sel_lookaddons = col_or_zero("p", "lookaddons")
         sel_lookhead   = col_or_zero("p", "lookhead")
@@ -290,7 +354,7 @@ def server_players(request):
         sel_looklegs   = col_or_zero("p", "looklegs")
         sel_lookfeet   = col_or_zero("p", "lookfeet")
 
-        # Mount column varies or is absent; try common aliases
+        # Mount column varies or may be absent; try common aliases
         if db._has_column("players", "lookmount"):
             sel_lookmount = "p.lookmount AS lookmount"
         elif db._has_column("players", "mount"):
@@ -299,6 +363,9 @@ def server_players(request):
             sel_lookmount = "p.lookmountid AS lookmount"
         else:
             sel_lookmount = "0 AS lookmount"
+
+        # If schema supports multi-world, include it in WHERE
+        has_world = db._has_column("players", "world_id")
 
         def chunks(seq, n=500):
             for i in range(0, len(seq), n):
@@ -323,7 +390,13 @@ def server_players(request):
                 LEFT JOIN accounts a ON a.id = p.{acc_fk}
                 WHERE p.name IN ({placeholders})
             """
-            rows.extend(db.run("select", sql, batch) or [])
+            params = list(batch)
+            # add world filter if available/selected
+            if has_world and selected_world_id is not None:
+                sql += " AND p.world_id = %s"
+                params.append(int(selected_world_id))
+
+            rows.extend(db.run("select", sql, params) or [])
 
         by_name = {r["name"]: r for r in rows}
 
@@ -344,17 +417,25 @@ def server_players(request):
                 })
             enriched.append(p)
         data["list"] = enriched
+
+    # 4) Attach world meta so the frontend can display it if desired
+    if selected_world_meta:
+        data["world"] = selected_world_meta
+
     return JsonResponse(data)
-
 def online_list(request):
-    data = query_ot_players(
-        settings.OT_STATUS_HOST,
-        settings.OT_STATUS_PORT,
-        getattr(settings, "OT_STATUS_TIMEOUT", 5.0),
-        retries=1, backoff=1.0,
-    )
-    return render(request, "pages/online.html", {"status": data})
+    worlds = db.run("select", "SELECT id, name FROM worlds ORDER BY id", {}) or []
+    world_param = request.GET.get("world")
+    try:
+        selected_world_id = int(world_param) if world_param else (int(worlds[0]["id"]) if worlds else None)
+    except (TypeError, ValueError):
+        selected_world_id = int(worlds[0]["id"]) if worlds else None
 
+    return render(request, "pages/online.html", {
+        "worlds": worlds,
+        "selected_world_id": selected_world_id,
+    })
+    
 def search_character(request):
     q = (request.GET.get("q") or "").strip()
     matches = []
@@ -838,11 +919,11 @@ def signup(request):
         try:
             account_id = int(form.cleaned_data["username"])
         except Exception:
-            form.add_error("account_id", "Please enter a valid account number.")
+            form.add_error("username", "Please enter a valid account number.")
             return render(request, "pages/signup.html", {"form": form})
 
         if account_id <= 0:
-            form.add_error("account_id", "Account number must be a positive integer.")
+            form.add_error("username", "Account number must be a positive integer.")
             return render(request, "pages/signup.html", {"form": form})
 
         email = form.cleaned_data.get("email") or ""
@@ -864,7 +945,7 @@ def signup(request):
                     
                 )
                 if exists:
-                    form.add_error("account_id", "That account number is already in use.")
+                    form.add_error("username", "That account number is already in use.")
                     return render(request, "pages/signup.html", {"form": form})
 
                 # Build insert data
@@ -1119,6 +1200,15 @@ def team(request):
 def commands(request):
     return render(request, "pages/commands.html", {})
 
+def bestiary(request):
+    return render(request, "pages/bestiary.html", {})
+
+def ability_orbs(request):
+    return render(request, "pages/ability_orbs.html", {})
+    
+def refine(request):
+    return render(request, "pages/refine.html", {})
+
 def rules(request):
     return render(request, "pages/rules.html", {"now": now()})
 
@@ -1137,28 +1227,48 @@ def account_character_create(request):
     if not ot_account_id:
         messages.error(request, "Your OT account session is missing. Please log in again.")
         return redirect("login")
+    war_choices_json = mark_safe(json.dumps([(v, name) for v, name in VOCATION_CHOICES if v != 0]))
 
-    form = CreateCharacterForm(request.POST or None)
+    world_pref = request.GET.get("world")
+    initial = {"world": world_pref} if world_pref else None
+    form = CreateCharacterForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
         name     = form.cleaned_data["name"].strip()
         vocation = form.cleaned_data["vocation"]
         sex      = form.cleaned_data["sex"]
-        if settings.WAR_SERVER_ENABLED:
+        world_id = int(form.cleaned_data["world"])  # NEW
+
+        if settings.WAR_SERVER_ENABLED and world_id == 2:
             town_id  = getattr(settings, "WAR_OT_DEFAULT_TOWN_ID", 1)
         else:
             town_id  = getattr(settings, "OT_DEFAULT_TOWN_ID", 1) #form.cleaned_data.get("town_id") or getattr(settings, "OT_DEFAULT_TOWN_ID", 1)
 
         cols = _players_columns()
 
+        has_world = "world_id" in cols  # whether schema supports multi-world
         # Uniqueness check (case-insensitive) using DB helper
-        row = db.run(
-            "select_one",
-            f"SELECT 1 FROM {PLAYERS_TBL} WHERE LOWER(name)=LOWER(:n) LIMIT 1",
-            {"n": name},
-        )
+         # --- Uniqueness check (case-insensitive) ---
+        if has_world:
+            row = db.run(
+                "select_one",
+                f"SELECT 1 FROM {PLAYERS_TBL} "
+                "WHERE LOWER(name)=LOWER(:n) AND world_id=:w AND deletion=0 LIMIT 1",
+                {"n": name, "w": world_id},
+            )
+        else:
+            row = db.run(
+                "select_one",
+                f"SELECT 1 FROM {PLAYERS_TBL} "
+                "WHERE LOWER(name)=LOWER(:n) AND deletion=0 LIMIT 1",
+                {"n": name},
+            )
         if row:
-            form.add_error("name", "That name is already taken.")
-            return render(request, "pages/account_character_create.html", {"form": form})
+            form.add_error("name", "That name is already taken on the selected world." if has_world else "That name is already taken.")
+            return render(request, "pages/account_character_create.html", {
+                "form": form,
+                "war_choices_json": war_choices_json,
+            })
+
 
         # Build a defaults map with sensible values, then only keep keys that exist in your schema
         defaults = {
@@ -1237,7 +1347,7 @@ def account_character_create(request):
         }
 
         # If WAR server enabled, mutate war_server in-place based on vocation.
-        if settings.WAR_SERVER_ENABLED:
+        if settings.WAR_SERVER_ENABLED and world_id == 2:
             # adjust mage/paladin/knight starting skills by vocation
             v = war_server.get("vocation")
             if v in (1, 2):
@@ -1277,18 +1387,34 @@ def account_character_create(request):
         else:
             data = {k: v for k, v in defaults.items() if k in cols}
 
+        # NEW: stamp world_id if your schema supports it
+        if has_world:
+            data["world_id"] = world_id
+
+
         # Final safety: required minimum
         for required in ("name", ACC_COL, "vocation", "sex", "town_id"):
             if required not in data:
                 log.error("Missing required column on players table: %s", required)
                 messages.error(request, f"Server is missing required column '{required}' in '{PLAYERS_TBL}'.")
-                return render(request, "pages/account_character_create.html", {"form": form})
+                return render(request, "pages/account_character_create.html", {
+                    "form": form,
+                    "war_choices_json": war_choices_json,
+                })
 
         # Check character limit for account using DB helper
-        cnt = int(db.run("scalar", f"SELECT COUNT(*) FROM {PLAYERS_TBL} WHERE {ACC_COL} = :acc", {"acc": ot_account_id}) or 0)
+        #cnt = int(db.run("scalar", f"SELECT COUNT(*) FROM {PLAYERS_TBL} WHERE {ACC_COL} = :acc", {"acc": ot_account_id}) or 0)
+        cnt = int(db.run(
+            "scalar",
+            f"SELECT COUNT(*) FROM {PLAYERS_TBL} WHERE {ACC_COL}=:acc AND world_id=:w",
+            {"acc": ot_account_id, "w": world_id},
+        ) or 0)
         if cnt >= 5:
             form.add_error(None, "You reached the character limit on this account.")
-            return render(request, "pages/account_character_create.html", {"form": form})
+            return render(request, "pages/account_character_create.html", {
+                "form": form,
+                "war_choices_json": war_choices_json,
+            })
 
         # Insert using DB helper inside atomic transaction
         try:
@@ -1298,9 +1424,15 @@ def account_character_create(request):
         except Exception:
             log.exception("Failed to insert character '%s' for account %s", name, ot_account_id)
             messages.error(request, "Couldn’t create your character. Please try again.")
-            return render(request, "pages/account_character_create.html", {"form": form})
+            return render(request, "pages/account_character_create.html", {
+                "form": form,
+                "war_choices_json": war_choices_json,
+            })
 
         messages.success(request, f"Character '{name}' created!")
         return redirect("account_manage")
 
-    return render(request, "pages/account_character_create.html", {"form": form})
+    return render(request, "pages/account_character_create.html", {
+        "form": form,
+        "war_choices_json": war_choices_json,
+    })

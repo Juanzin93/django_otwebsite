@@ -42,10 +42,25 @@
         <div class="ticker__track">
           <span class="dot"></span>
           <div class="ticker__marquee">
-            <span>19 Aug 2025 — Welcome to Retrowar OT!</span>
+            <span>Welcome to Retrowar OT!</span>
           </div>
         </div>
       </div>
+      <!-- Countdown (style this however you want) -->
+<div id="countdown" class="countdown">
+  <span class="cd-part">Starts In </span>
+  <span class="cd-part"><span id="cd-days">0</span>d</span>
+  <span class="cd-part"><span id="cd-hours">00</span>h</span>
+  <span class="cd-part"><span id="cd-mins">00</span>m</span>
+  <span class="cd-part"><span id="cd-secs">00</span>s</span>
+</div>
+<div id="countdown-finished" class="hidden">🎉 Server is Online!</div>
+
+<style>
+  .countdown { display:flex; gap:.5rem; font-weight:600; font-variant-numeric: tabular-nums; }
+  .cd-part { padding:.25rem .5rem; border-radius:.5rem; background:#11111110 }
+  .hidden { display:none; }
+</style>
     </header>
 
     <div class="columns">
@@ -118,13 +133,13 @@
             </button>
             <div class="acc__body" hidden>
               <ul class="menu">
-                <!--<li><a href="#">Creatures</a></li>
-                <li><a href="#">Spells</a></li>-->
+                <li><a href="{% url 'ability_orbs' %}">Ability Orbs</a></li>
+                <li><a href="{% url 'refine' %}">Refine System</a></li>
+                <li><a href="{% url 'bestiary' %}">Bestiary</a></li>
                 <li><a href="{% url 'commands' %}">Commands</a></li>
                 <li><a href="{% url 'server_info' %}">Server Info</a></li>
                 <li><a href="{% url 'gallery' %}">Gallery</a></li>
-                <!--<li><a href="#">Experience Stages</a></li>
-                <li><a href="#">Experience Table</a></li>-->
+                <!--<li><a href="#">Experience Table</a></li>-->
               </ul>
             </div>
           </div>
@@ -151,7 +166,7 @@
 
       <aside class="col col--right">
         <section class="panel dl">
-          <a class="btn btn--dl" href="https://mega.nz/file/dSpV3Y5T#aRo6WSE-3LJbaf0chIGq5fJS9yV5A63GS2XiqmUlmCw">Download Client</a>
+          <a class="btn btn--dl" href="https://www.4shared.com/s/f3G-BG1yYjq">Download Client</a>
           <small>Download latest client</small>
         </section>
         <br>
@@ -251,6 +266,50 @@
         </section>
         <br>
         {% endif %}
+        <section class="panel">
+          <h3 class="panel__title">SOCIAL MEDIA</h3>
+
+          <!-- Self-contained styles just for this widget -->
+          <style>
+            .contact-icons-mini {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 14px;
+              margin-top: 8px;
+            }
+            .contact-icons-mini a {
+              display: inline-flex;
+              justify-content: center;
+              align-items: center;
+              width: 72px;   /* overall button size */
+              height: 72px;
+              border-radius: 8px;
+              text-decoration: none;
+            }
+            .contact-icons-mini img {
+              width: 44px;   /* icon size */
+              height: 44px;
+              display: block;
+            }
+            /* Optional brand backgrounds (remove if you want transparent) */
+            .contact-icons-mini .discord { background: #5865F2; }
+            .contact-icons-mini .whatsapp { background: #25D366; }
+
+            /* Subtle hover */
+            .contact-icons-mini a:hover { transform: translateY(-1px); }
+          </style>
+
+          <div class="contact-icons-mini">
+            <a class="discord" href="https://discord.gg/BfBhFhek6e" target="_blank" rel="noopener" title="Join us on Discord">
+              <img src="https://cdn.jsdelivr.net/npm/simple-icons@9/icons/discord.svg" alt="Discord">
+            </a>
+            <a class="whatsapp" href="https://chat.whatsapp.com/IdOa3EULlU5CuBh2hBagag?mode=ems_copy_c" target="_blank" rel="noopener" title="Message us on WhatsApp">
+              <img src="https://cdn.jsdelivr.net/npm/simple-icons@9/icons/whatsapp.svg" alt="WhatsApp">
+            </a>
+          </div>
+        </section>
+        <br>
       </aside>
     </div>
     <footer class="footer"></footer>
@@ -262,6 +321,71 @@
   <script src="{% static 'assets/js/navspan.js' %}" defer></script>
   <script src="{% static 'assets/js/equip_inline.js' %}" defer></script>
   <script src="{% static 'assets/js/bazaar-list.js' %}" defer></script>
+<script>
+(function () {
+  // --- Choose ONE of these targets ---
+
+  // (A) Hardcode a target date/time (ISO 8601 is safest)
+  // const targetIso = "2025-11-01T00:00:00Z"; // UTC midnight
+  // const target = new Date(targetIso).getTime();
+
+  // (B) From Django context as ISO string (recommended)
+  //   In your view: context["launch_iso"] = "2025-11-01T00:00:00Z"
+  const target = new Date("{{ launch_iso|default:'2025-10-17T18:00:00-04:00' }}").getTime();
+
+  // (Optional) pass server "now" to reduce client clock drift:
+  // In your view: context["server_now_iso"] = timezone.now().isoformat()
+  const serverNowIso = "{{ server_now_iso|default:'' }}";
+  const clientNow = Date.now();
+  const startNow = serverNowIso ? new Date(serverNowIso).getTime() : clientNow;
+  let drift = clientNow - startNow; // ms: positive if client is ahead of server
+
+  // --- Elements ---
+  const elDays = document.getElementById("cd-days");
+  const elHours = document.getElementById("cd-hours");
+  const elMins = document.getElementById("cd-mins");
+  const elSecs = document.getElementById("cd-secs");
+  const wrap = document.getElementById("countdown");
+  const done = document.getElementById("countdown-finished");
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+  function tick() {
+    const now = Date.now() - drift;
+    let diff = target - now;
+
+    if (diff <= 0) {
+      // Hit zero: swap UI and stop.
+      elDays.textContent = "0";
+      elHours.textContent = "00";
+      elMins.textContent = "00";
+      elSecs.textContent = "00";
+      if (wrap) wrap.classList.add("hidden");
+      if (done) done.classList.remove("hidden");
+
+      // Optional: do something (redirect, enable button, etc.)
+      // window.location.reload();
+      clearInterval(timer);
+      return;
+    }
+
+    const sec = Math.floor(diff / 1000);
+    const days  = Math.floor(sec / 86400);
+    const hours = Math.floor((sec % 86400) / 3600);
+    const mins  = Math.floor((sec % 3600) / 60);
+    const secs  = sec % 60;
+
+    elDays.textContent  = days;
+    elHours.textContent = pad(hours);
+    elMins.textContent  = pad(mins);
+    elSecs.textContent  = pad(secs);
+  }
+
+  // Initial paint + 1s interval
+  tick();
+  const timer = setInterval(tick, 1000);
+})();
+</script>
 
 </body>
 </html>

@@ -191,9 +191,12 @@ def _account_already_bought_starter(account_id: int) -> bool:
     with status pending or delivered as 'already bought'.
     """
     row = db.run("select_one", """
-        SELECT *
-          FROM store_orders
-         WHERE account_id = %s
+        SELECT id
+        FROM store_orders
+        WHERE account_id = %s
+        AND actionid IN (58008, 58007, 58006)
+        AND status IN ('pending','delivered')
+        LIMIT 1
     """, [account_id])
 
     print("DB check already bought starter:", row)

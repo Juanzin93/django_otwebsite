@@ -151,3 +151,113 @@ CREATE TABLE IF NOT EXISTS store_orders (
   delivered_at  INT NULL,
   UNIQUE KEY uniq_tx (txid, actionid)     -- idempotency across retries
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+ALTER TABLE accounts ADD COLUMN email VARCHAR(255) NOT NULL DEFAULT '';
+ALTER TABLE accounts ADD email varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT '' NOT NULL;
+ALTER TABLE accounts ADD created int DEFAULT 0 NOT NULL;
+ALTER TABLE accounts ADD rlname varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT '' NOT NULL;
+ALTER TABLE accounts ADD location varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT '' NOT NULL;
+ALTER TABLE accounts ADD country varchar(3) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT '' NOT NULL;
+ALTER TABLE accounts ADD web_lastlogin int DEFAULT 0 NOT NULL;
+ALTER TABLE accounts ADD web_flags int DEFAULT 0 NOT NULL;
+ALTER TABLE accounts ADD email_hash varchar(32) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT '' NOT NULL;
+ALTER TABLE accounts ADD email_new varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT '' NOT NULL;
+ALTER TABLE accounts ADD email_new_time int DEFAULT 0 NOT NULL;
+ALTER TABLE accounts ADD email_code varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT '' NOT NULL;
+ALTER TABLE accounts ADD email_next int DEFAULT 0 NOT NULL;
+ALTER TABLE accounts ADD premium_points int DEFAULT 0 NOT NULL;
+ALTER TABLE accounts ADD email_verified tinyint(1) DEFAULT 0 NOT NULL;
+ALTER TABLE accounts ADD `key` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT '' NOT NULL;
+
+
+-- =====================================================
+-- GUILDS
+-- =====================================================
+CREATE TABLE guilds (
+  id                INT NOT NULL AUTO_INCREMENT,
+  name              VARCHAR(64)  NOT NULL,
+  description       TEXT         NULL,
+  motd              TEXT         NULL,
+  logo_url          VARCHAR(255) NULL,
+  creationdata      INT NULL,         -- UNIX timestamp (optional)
+  owner_player_id   INT NULL,
+  owner_account_id  INT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_guilds_name (name),
+  KEY idx_guilds_owner_player (owner_player_id),
+  KEY idx_guilds_owner_account (owner_account_id),
+  CONSTRAINT fk_guilds_owner_player
+    FOREIGN KEY (owner_player_id) REFERENCES players(id)
+      ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_guilds_owner_account
+    FOREIGN KEY (owner_account_id) REFERENCES accounts(id)
+      ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- GUILD_RANKS
+-- =====================================================
+CREATE TABLE guild_ranks (
+  id         INT NOT NULL AUTO_INCREMENT,
+  guild_id   INT NOT NULL,
+  name       VARCHAR(64) NOT NULL,
+  `level`    TINYINT NOT NULL DEFAULT 1,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_ranks_guild_level (guild_id, `level`),
+  UNIQUE KEY uq_ranks_guild_name  (guild_id, name),
+  KEY idx_ranks_guild (guild_id),
+  CONSTRAINT fk_ranks_guild
+    FOREIGN KEY (guild_id) REFERENCES guilds(id)
+      ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- GUILD_MEMBERS
+-- =====================================================
+CREATE TABLE guild_members (
+  id         INT NOT NULL AUTO_INCREMENT,
+  guild_id   INT NOT NULL,
+  player_id  INT NOT NULL,
+  rank_id    INT NULL,
+  joined_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_members_unique (guild_id, player_id),
+  KEY idx_members_guild (guild_id),
+  KEY idx_members_player (player_id),
+  KEY idx_members_rank (rank_id),
+  CONSTRAINT fk_members_guild
+    FOREIGN KEY (guild_id)  REFERENCES guilds(id)
+      ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_members_player
+    FOREIGN KEY (player_id) REFERENCES players(id)
+      ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_members_rank
+    FOREIGN KEY (rank_id)   REFERENCES guild_ranks(id)
+      ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- GUILD_INVITES
+-- =====================================================
+CREATE TABLE guild_invites (
+  id             INT NOT NULL AUTO_INCREMENT,
+  guild_id       INT NOT NULL,
+  player_id      INT NOT NULL,
+  invited_by_id  INT NULL,
+  created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_invites_unique (guild_id, player_id),
+  KEY idx_invites_guild (guild_id),
+  KEY idx_invites_player (player_id),
+  KEY idx_invites_invited_by (invited_by_id),
+  CONSTRAINT fk_invites_guild
+    FOREIGN KEY (guild_id)      REFERENCES guilds(id)
+      ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_invites_player
+    FOREIGN KEY (player_id)     REFERENCES players(id)
+      ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_invites_invited_by
+    FOREIGN KEY (invited_by_id) REFERENCES players(id)
+      ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

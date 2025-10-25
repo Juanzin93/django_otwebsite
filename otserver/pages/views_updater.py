@@ -4,6 +4,7 @@ from pathlib import Path
 from django.http import JsonResponse, Http404, FileResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
+from django.shortcuts import redirect
 
 API_DIR = Path("/srv/django_otwebsite/otserver/api").resolve()
 FILES_AND_DIRS = ["init.lua", "data", "modules", "mods", "layouts"]
@@ -31,40 +32,66 @@ def _files_base_url(request) -> str:
     return base if base.endswith("/") else base + "/"
 
 URL_UNSAFE = re.compile(r"[ \t\(\)]")  # space, tab, parentheses
-
 @csrf_exempt
 def updater(request):
-    # Always end with a slash so HTTP.download(url .. file) is valid
+    """
+    Generate the OTClient update manifest.
+    Includes a manual version number to force updates only when bumped.
+    """
+    MANUAL_VERSION = "1.0.0"  # 🔧 Increase this whenever you want clients to re-update
+
+    client_platform = None
+    if request.body:
+        try:
+            import json
+            payload = json.loads(request.body.decode("utf-8"))
+            client_platform = payload.get("platform")
+        except Exception:
+            client_platform = None
+
     base_url = "https://retrowarot.com/api/"
-    manifest = {"url": base_url, "files": {}, "keepFiles": True}
+    manifest = {
+        "url": base_url,
+        "files": {},
+        "keepFiles": True,
+        "version": MANUAL_VERSION,  # 🧩 Added manual version
+    }
+
+    wanted_binary_name = BINARIES.get(client_platform or "", "") or ""
+    wanted_binary_relpath = None
+    wanted_binary_checksum = None
 
     for root, _, files in os.walk(API_DIR):
+        files.sort()
         for fname in files:
             fpath = Path(root) / fname
             rel = fpath.relative_to(API_DIR).as_posix()
             top = rel.split("/", 1)[0]
 
-            # only publish wanted roots
             if top not in FILES_AND_DIRS:
                 continue
-
-            # skip paths that would break URL concatenation
             if URL_UNSAFE.search(rel):
                 continue
 
-            manifest["files"][rel] = _crc32_hex(fpath)
+            crc = _crc32_hex(fpath)
+            manifest["files"][rel] = crc
 
-            # optional binary
-            for _, binname in BINARIES.items():
-                if binname and rel.endswith(binname):
-                    manifest["binary"] = {
-                        "file": rel,
-                        "checksum": _crc32_hex(fpath),
-                    }
+            if wanted_binary_name and rel.endswith("/" + wanted_binary_name):
+                wanted_binary_relpath = rel
+                wanted_binary_checksum = crc
+
+    manifest["files"] = dict(sorted(manifest["files"].items()))
+
+    if wanted_binary_relpath and wanted_binary_checksum:
+        manifest["binary"] = {
+            "file": wanted_binary_relpath,
+            "checksum": wanted_binary_checksum,
+        }
 
     resp = JsonResponse(manifest, json_dumps_params={"indent": 2})
     resp["Cache-Control"] = "no-store"
     return resp
+
 
 @csrf_exempt
 def api_file(request, subpath: str):
@@ -80,7 +107,16 @@ def api_file(request, subpath: str):
                         as_attachment=False,
                         content_type="application/octet-stream")
     # Long cache for immutable client assets
-    resp["Cache-Control"] = "public, max-age=31536000, immutable"
-    # Inline (not “download”)
+   # resp["Cache-Control"] = "public, max-age=31536000, immutable"
+   # # Inline (not “download”)
+   # resp["Content-Disposition"] = f'inline; filename="{safe_path.name}"'
+   # api_file()
+    resp["Cache-Control"] = "no-cache, must-revalidate"
+    # or the nuclear option:
+    # resp["Cache-Control"] = "no-store"
     resp["Content-Disposition"] = f'inline; filename="{safe_path.name}"'
     return resp
+
+@csrf_exempt
+def updater_php(request):
+    return updater(request)

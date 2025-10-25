@@ -14,6 +14,10 @@
         {{ form.name }} {{ form.name.errors }}
       </div>
       <div class="field">
+        <label>World</label>
+        {{ form.world }} {{ form.world.errors }}
+      </div>
+      <div class="field">
         <label>Vocation</label>
         {{ form.vocation }} {{ form.vocation.errors }}
       </div>
@@ -29,5 +33,45 @@
       <a class="link" href="{% url 'account_manage' %}">Cancel</a>
     </form>
   </section>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const worldSel = document.getElementById('id_world');
+  const vocSel   = document.getElementById('id_vocation');
+  if (!worldSel || !vocSel) return;
+
+  // Define your two sets
+  const WAR_CHOICES = JSON.parse('{{ war_choices_json|safe }}'); // e.g. [[1,"Sorcerer"],[2,"Druid"],[3,"Paladin"],[4,"Knight"]]
+  const NON_CHOICES = [[0, "None"]];
+
+  function setChoices(choices) {
+    // remember current selection
+    const prev = vocSel.value;
+    // clear
+    while (vocSel.firstChild) vocSel.removeChild(vocSel.firstChild);
+    // add
+    choices.forEach(([val, label]) => {
+      const opt = document.createElement('option');
+      opt.value = String(val);
+      opt.textContent = label;
+      vocSel.appendChild(opt);
+    });
+    // try keep previous if valid
+    const valid = choices.some(([v]) => String(v) === prev);
+    vocSel.value = valid ? prev : String(choices[0][0]);
+  }
+
+  function isWarWorldName(name) {
+    return name && name.trim().toLowerCase() === 'war';
+  }
+
+  function refreshForWorld() {
+    const selectedText = worldSel.options[worldSel.selectedIndex]?.text || '';
+    setChoices(isWarWorldName(selectedText) ? WAR_CHOICES : NON_CHOICES);
+  }
+
+  worldSel.addEventListener('change', refreshForWorld);
+  refreshForWorld(); // initial
+});
+</script>
 </main>
 {% endblock %}

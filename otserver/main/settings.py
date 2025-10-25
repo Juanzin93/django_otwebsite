@@ -134,6 +134,19 @@ DATABASES = {
             # Keeps Django strict about invalid data; good default for MySQL
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
         },
+    },
+    env("DB_NAME"): {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": env("DB_HOST", default="127.0.0.1"),
+        "PORT": env("DB_PORT", default="3306"),
+        "OPTIONS": {
+            "charset": "utf8mb4",
+            # Keeps Django strict about invalid data; good default for MySQL
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
@@ -288,6 +301,8 @@ OT_START_LOOKLEGS      = int(os.getenv("OT_START_LOOKLEGS", 58))
 OT_START_LOOKFEET      = int(os.getenv("OT_START_LOOKFEET", 0))
 
 # war server
+WAR_WORLD_IDS = [2] #os.getenv("WAR_WORLD_IDS", [2])   # <-- put your WAR world id(s) here
+WAR_WORLD_NAMES = ["WAR"]  
 WAR_OT_DEFAULT_TOWN_ID       = int(os.getenv("WAR_OT_DEFAULT_TOWN_ID", 1)) # Thais
 WAR_OT_START_LEVEL           = int(os.getenv("WAR_OT_START_LEVEL", 1))   # tweak for your world
 WAR_OT_START_HEALTH          = int(os.getenv("WAR_OT_START_HEALTH", 150))
@@ -312,4 +327,6 @@ WAR_OT_START_CLUB_SKILL      = int(os.getenv("WAR_OT_START_CLUB_SKILL", 10))
 WAR_OT_START_SWORD_SKILL     = int(os.getenv("WAR_OT_START_SWORD_SKILL", 10))
 WAR_OT_START_DISTANCE_SKILL  = int(os.getenv("WAR_OT_START_DISTANCE_SKILL", 10))
 WAR_OT_START_SHIELDING_SKILL = int(os.getenv("WAR_OT_START_SHIELDING_SKILL", 10))
+
+
 OT_SIGNUP_PREMIUM_DAYS = int(os.getenv("OT_SIGNUP_PREMIUM_DAYS", 0))  # free premium days on signup

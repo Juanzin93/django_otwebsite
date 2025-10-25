@@ -1,0 +1,307 @@
+
+{% extends "pages/index.html" %}
+{% load static %}
+{% block title %}Refine System{% endblock %}
+
+{% block content %}
+<section class="panel" id="refining">
+  <h2 class="panel__title">Refining</h2>
+
+  <p>
+    Upgrade your equipment to <b>+1 ~ +10</b>. Each refine attempt rolls a chance to
+    <b>Success</b>, <b>Fail</b>, or <b>Break</b> the item. Higher tiers and levels are
+    stronger but harder to upgrade.
+  </p>
+
+  <hr>
+
+  <h3>How Refining Works</h3>
+  <ol>
+    <li><b>Equip</b> the item you want to refine (only equipped items can be refined).</li>
+    <li>Target the equipped item with a <b>Refine Stone</b> (UI will open automatically).</li>
+    <li>Confirm the attempt. The UI shows:
+      <ul>
+        <li><b>Success Rate</b> – chance the item goes up by +1.</li>
+        <li><b>Fail Rate</b> – no change to the item.</li>
+        <li><b>Break Rate</b> – item is destroyed unless you enable <b>Protection</b>.</li>
+      </ul>
+    </li>
+  </ol>
+
+  <p style="margin-top:8px;">
+    <b>Cap:</b> Items can be refined up to <b>+10</b>.
+    <br>
+    <b>Legendary items:</b> If an item’s name starts with <code>legendary</code>, it’s treated as <b>Tier 5</b> for refining purposes.
+  </p>
+
+  <hr>
+
+  <h3>Requirements & Costs</h3>
+  <p>Each attempt consumes materials and currency depending on the item’s <b>Tier</b> and current <b>+</b> level:</p>
+
+  <ul>
+    <li><b>Clone Amount</b> – a small count of refine stones used per level (shown in the UI).</li>
+    <li><b>Refine Material</b> – based on Tier (e.g., Task Stones / Black Gems).</li>
+    <li><b>Currency</b> – based on Tier (Platinum / Crystal / Emerald coins).</li>
+    <li><b>Optional Protection</b> – spend account coins to prevent breaking on failure; the attempt then counts as a normal <i>Fail</i> instead of <i>Break</i>.</li>
+  </ul>
+
+  <div class="note" style="margin-top:6px;">
+    <b>What happens on each outcome?</b><br>
+    <b>Success:</b> item gains +1. &nbsp; <b>Fail:</b> no change, materials are consumed. &nbsp;
+    <b>Break:</b> item is destroyed (unless Protection was enabled).
+  </div>
+
+  <hr>
+
+  <h3>Tiers & Examples</h3>
+  <p>
+    Items are grouped from <b>Tier 1</b> (early gear) to <b>Tier 5</b> (end-game/legendary).
+    Higher tiers cost more and have lower success rates at higher levels.
+  </p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+    <div class="card" style="background:#111;padding:10px;border-radius:6px;">
+      <h4 style="margin:0 0 6px;">Tier 1</h4>
+      <p style="margin:0">Low-level weapons/armors (e.g., Hand Axe, Leather Armor, Wooden/Steel Shields…).</p>
+      <p style="margin:6px 0 0;">Early levels are <b>100%</b> success; difficulty rises toward +10.</p>
+    </div>
+    <div class="card" style="background:#111;padding:10px;border-radius:6px;">
+      <h4 style="margin:0 0 6px;">Tier 2</h4>
+      <p style="margin:0">Mid gear (e.g., Serpent/Spike/Broad Swords, Battle Axe, Dark/Ancient/Griffin Shields…).</p>
+      <p style="margin:6px 0 0;">Moderate costs, success begins to drop after +3/+4.</p>
+    </div>
+    <div class="card" style="background:#111;padding:10px;border-radius:6px;">
+      <h4 style="margin:0 0 6px;">Tier 3</h4>
+      <p style="margin:0">High gear (e.g., Fire/Two-Handed/Djinn Blade, Dragon/Crown/Tower Shields, Crown Armor…).</p>
+      <p style="margin:6px 0 0;">Higher costs; protection recommended past +3.</p>
+    </div>
+    <div class="card" style="background:#111;padding:10px;border-radius:6px;">
+      <h4 style="margin:0 0 6px;">Tier 4</h4>
+      <p style="margin:0">Late game (e.g., Dragon Lance, War Axe, Magic Sword, War Hammer, Vampire/Demon/MM Shields…).</p>
+      <p style="margin:6px 0 0;">Noticeable break chance from mid levels; protection strongly advised.</p>
+    </div>
+    <div class="card" style="background:#111;padding:10px;border-radius:6px;">
+      <h4 style="margin:0 0 6px;">Tier 5</h4>
+      <p style="margin:0">End-game/Legendary (e.g., Warlord/Pharaoh Sword, Stonecutter/Great Axe, Demon Armor, Blessed/Great/Eagle/Tempest Shields…).</p>
+      <p style="margin:6px 0 0;">Premium costs, lowest success at high +; protection highly recommended.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <h3>Success, Fail & Break (by level)</h3>
+  <p>
+    Early levels start easy (<b>up to 100% success</b> in low tiers) and scale down by level.
+    By +10, rates are much tougher and break chances appear on higher tiers. The exact rates and
+    costs are shown in the refine UI before you confirm.
+  </p>
+
+  <table style="width:100%;border-collapse:collapse;margin-top:6px;">
+    <thead>
+      <tr>
+        <th style="text-align:left;border-bottom:1px solid #444;padding:6px;">Level</th>
+        <th style="text-align:center;border-bottom:1px solid #444;padding:6px;">T1 (easy start)</th>
+        <th style="text-align:center;border-bottom:1px solid #444;padding:6px;">T3 (balanced)</th>
+        <th style="text-align:center;border-bottom:1px solid #444;padding:6px;">T5 (hard)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:6px;">+1 → +2</td><td style="text-align:center;">100% / 0% / 0%</td><td style="text-align:center;">100% / 0% / 0%</td><td style="text-align:center;">80% / 0% / 0%</td></tr>
+      <tr><td style="padding:6px;">+4 → +5</td><td style="text-align:center;">90% / 10% / 0%</td><td style="text-align:center;">70% / 25% / 5%</td><td style="text-align:center;">40% / 35% / 15%</td></tr>
+      <tr><td style="padding:6px;">+7 → +8</td><td style="text-align:center;">60% / 30% / 10%</td><td style="text-align:center;">40% / 40% / 20%</td><td style="text-align:center;">1% / 60% / 39%</td></tr>
+      <tr><td style="padding:6px;">+9 → +10</td><td style="text-align:center;">40% / 40% / 20%</td><td style="text-align:center;">20% / 50% / 30%</td><td style="text-align:center;">1% / 40% / 59%</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:8px;font-size:12px;color:#bbb;">
+    Format per cell: <b>Success% / Fail% / Break%</b>. Values above are representative of your server’s ranges; the refine window shows the exact numbers for your item, tier and level.
+  </p>
+
+  <hr>
+
+  <h3>Eligible Items</h3>
+  <p>
+    Not every item can be refined. Most mainstream gear is supported (weapons, shields, armor,
+    helmets, legs, some wands/rods, bows and crossbows). If the UI says “You cannot refine this item,”
+    that item isn’t on the whitelist.
+  </p>
+
+  <ul>
+    <li><b>Weapon Skill types</b>: Axe / Sword / Club / Distance (bows & crossbows) and Wands/Rods.</li>
+    <li><b>Armor</b>: Helmets, Armors, Legs, Boots, and Shields (where applicable).</li>
+  </ul>
+
+  <hr>
+
+  <h3>Tips</h3>
+  <ul>
+    <li>Push to +3/+4 without protection on low tiers, then enable <b>Protection</b> as break rates appear.</li>
+    <li>Save higher-tier attempts (+6 and beyond) for when you can afford protection and materials.</li>
+    <li>Legendary items count as Tier 5—plan extra budget for them.</li>
+  </ul>
+  <h3 class="panel__title">Refining Calculator</h3>
+
+  <div class="refine-grid" id="refine-calculator">
+    <label>
+      Tier
+      <select id="tier">
+        <option value="1">Tier 1</option>
+        <option value="2">Tier 2</option>
+        <option value="3">Tier 3</option>
+        <option value="4">Tier 4</option>
+        <option value="5">Tier 5 (Legendary)</option>
+      </select>
+    </label>
+
+    <label>
+      Current Refine
+      <select id="level">
+        <option value="0">+0</option><option value="1">+1</option>
+        <option value="2">+2</option><option value="3">+3</option>
+        <option value="4">+4</option><option value="5">+5</option>
+        <option value="6">+6</option><option value="7">+7</option>
+        <option value="8">+8</option><option value="9">+9</option>
+      </select>
+      <small class="help">Calculates for upgrading to the next level.</small>
+    </label>
+
+    <label class="protect">
+      <input type="checkbox" id="protection"> Use Protection
+      <small class="help">Adds up to +50% Success (taken from Break → Fail).</small>
+    </label>
+  </div>
+
+  <div class="rows">
+    <div class="row"><span>Next Level</span><b id="nextLabel">+1</b></div>
+    <div class="row"><span>Clone Items</span><b id="cloneAmt">—</b></div>
+    <div class="row"><span>Refine Material</span><b><span id="matName">—</span> × <span id="matAmt">—</span></b></div>
+    <div class="row"><span>Currency</span><b><span id="moneyName">—</span> × <span id="moneyAmt">—</span></b></div>
+    <div class="row"><span>Protection Cost</span><b id="protCost">—</b></div>
+  </div>
+
+  <div class="rates">
+    <div class="rate"><span>Success</span><b id="succ" class="green">—%</b></div>
+    <div class="rate"><span>Fail</span><b id="fail" class="orange">—%</b></div>
+    <div class="rate"><span>Break</span><b id="break" class="red">—%</b></div>
+  </div>
+</section>
+
+<style>
+  #refine-calculator { max-width:640px;margin:0 auto;padding:10px 0; }
+  .refine-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;}
+  .protect{grid-column:1 / -1;display:flex;align-items:center;gap:10px;}
+  label{display:flex;flex-direction:column;gap:4px;}
+  .help{font-size:.85em;color:#777;}
+  .rows{border-top:1px solid #e5e5e5;margin-top:5px;}
+  .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;}
+  .rates{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;}
+  .rate{text-align:center;background:#fafafa;border:1px solid #eee;padding:10px;border-radius:8px;}
+  .rate b{font-size:1.25em;margin-top:4px;display:block;}
+  .green{color:#117a00;} .orange{color:#b36b00;} .red{color:#c21f1f;}
+</style>
+
+<script>
+const refineLevel={1:{1:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:1,itemAmount2:10,itemAmount3:10,protectionCost:0},
+2:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:2,itemAmount2:20,itemAmount3:20,protectionCost:0},
+3:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:3,itemAmount2:30,itemAmount3:30,protectionCost:0},
+4:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:4,itemAmount2:40,itemAmount3:40,protectionCost:0},
+5:{sucessRate:90,failRate:10,breakRate:0,itemAmount1:5,itemAmount2:50,itemAmount3:50,protectionCost:5},
+6:{sucessRate:80,failRate:15,breakRate:5,itemAmount1:6,itemAmount2:60,itemAmount3:60,protectionCost:10},
+7:{sucessRate:70,failRate:25,breakRate:5,itemAmount1:7,itemAmount2:70,itemAmount3:70,protectionCost:10},
+8:{sucessRate:60,failRate:30,breakRate:10,itemAmount1:8,itemAmount2:80,itemAmount3:80,protectionCost:15},
+9:{sucessRate:50,failRate:35,breakRate:15,itemAmount1:9,itemAmount2:90,itemAmount3:90,protectionCost:20},
+10:{sucessRate:40,failRate:40,breakRate:20,itemAmount1:10,itemAmount2:100,itemAmount3:100,protectionCost:30}},
+2:{1:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:1,itemAmount2:20,itemAmount3:1,protectionCost:0},
+2:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:2,itemAmount2:40,itemAmount3:2,protectionCost:0},
+3:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:3,itemAmount2:60,itemAmount3:3,protectionCost:0},
+4:{sucessRate:90,failRate:10,breakRate:0,itemAmount1:4,itemAmount2:80,itemAmount3:4,protectionCost:5},
+5:{sucessRate:80,failRate:15,breakRate:5,itemAmount1:5,itemAmount2:100,itemAmount3:5,protectionCost:10},
+6:{sucessRate:70,failRate:25,breakRate:5,itemAmount1:6,itemAmount2:200,itemAmount3:10,protectionCost:15},
+7:{sucessRate:60,failRate:30,breakRate:10,itemAmount1:7,itemAmount2:300,itemAmount3:25,protectionCost:20},
+8:{sucessRate:50,failRate:35,breakRate:15,itemAmount1:8,itemAmount2:400,itemAmount3:50,protectionCost:25},
+9:{sucessRate:40,failRate:40,breakRate:20,itemAmount1:9,itemAmount2:500,itemAmount3:75,protectionCost:30},
+10:{sucessRate:30,failRate:45,breakRate:25,itemAmount1:10,itemAmount2:600,itemAmount3:100,protectionCost:35}},
+3:{1:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:1,itemAmount2:30,itemAmount3:2,protectionCost:0},
+2:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:2,itemAmount2:60,itemAmount3:4,protectionCost:0},
+3:{sucessRate:90,failRate:10,breakRate:0,itemAmount1:3,itemAmount2:90,itemAmount3:6,protectionCost:5},
+4:{sucessRate:80,failRate:15,breakRate:5,itemAmount1:4,itemAmount2:120,itemAmount3:8,protectionCost:10},
+5:{sucessRate:70,failRate:25,breakRate:5,itemAmount1:5,itemAmount2:150,itemAmount3:10,protectionCost:15},
+6:{sucessRate:60,failRate:30,breakRate:10,itemAmount1:6,itemAmount2:200,itemAmount3:20,protectionCost:20},
+7:{sucessRate:50,failRate:35,breakRate:15,itemAmount1:7,itemAmount2:250,itemAmount3:50,protectionCost:25},
+8:{sucessRate:40,failRate:40,breakRate:20,itemAmount1:8,itemAmount2:300,itemAmount3:100,protectionCost:30},
+9:{sucessRate:30,failRate:45,breakRate:25,itemAmount1:9,itemAmount2:350,itemAmount3:150,protectionCost:35},
+10:{sucessRate:20,failRate:50,breakRate:30,itemAmount1:10,itemAmount2:400,itemAmount3:200,protectionCost:40}},
+4:{1:{sucessRate:100,failRate:0,breakRate:0,itemAmount1:1,itemAmount2:50,itemAmount3:10,protectionCost:0},
+2:{sucessRate:80,failRate:15,breakRate:5,itemAmount1:2,itemAmount2:100,itemAmount3:20,protectionCost:10},
+3:{sucessRate:70,failRate:20,breakRate:10,itemAmount1:3,itemAmount2:150,itemAmount3:50,protectionCost:15},
+4:{sucessRate:60,failRate:30,breakRate:10,itemAmount1:4,itemAmount2:200,itemAmount3:100,protectionCost:20},
+5:{sucessRate:50,failRate:35,breakRate:15,itemAmount1:5,itemAmount2:250,itemAmount3:150,protectionCost:30},
+6:{sucessRate:40,failRate:40,breakRate:20,itemAmount1:6,itemAmount2:300,itemAmount3:200,protectionCost:40},
+7:{sucessRate:30,failRate:45,breakRate:25,itemAmount1:7,itemAmount2:350,itemAmount3:250,protectionCost:50},
+8:{sucessRate:20,failRate:50,breakRate:30,itemAmount1:8,itemAmount2:400,itemAmount3:300,protectionCost:60},
+9:{sucessRate:10,failRate:55,breakRate:35,itemAmount1:9,itemAmount2:450,itemAmount3:400,protectionCost:70},
+10:{sucessRate:1,failRate:60,breakRate:39,itemAmount1:10,itemAmount2:500,itemAmount3:500,protectionCost:80}},
+5:{1:{sucessRate:80,failRate:0,breakRate:0,itemAmount1:1,itemAmount2:10,itemAmount3:2,protectionCost:10},
+2:{sucessRate:70,failRate:15,breakRate:5,itemAmount1:2,itemAmount2:20,itemAmount3:4,protectionCost:20},
+3:{sucessRate:60,failRate:20,breakRate:10,itemAmount1:3,itemAmount2:30,itemAmount3:6,protectionCost:30},
+4:{sucessRate:50,failRate:30,breakRate:10,itemAmount1:4,itemAmount2:40,itemAmount3:8,protectionCost:40},
+5:{sucessRate:40,failRate:35,breakRate:15,itemAmount1:5,itemAmount2:50,itemAmount3:10,protectionCost:50},
+6:{sucessRate:30,failRate:50,breakRate:20,itemAmount1:6,itemAmount2:60,itemAmount3:15,protectionCost:60},
+7:{sucessRate:15,failRate:60,breakRate:25,itemAmount1:7,itemAmount2:70,itemAmount3:20,protectionCost:70},
+8:{sucessRate:1,failRate:60,breakRate:39,itemAmount1:8,itemAmount2:80,itemAmount3:25,protectionCost:80},
+9:{sucessRate:1,failRate:50,breakRate:49,itemAmount1:9,itemAmount2:90,itemAmount3:35,protectionCost:90},
+10:{sucessRate:1,failRate:40,breakRate:59,itemAmount1:10,itemAmount2:100,itemAmount3:50,protectionCost:100}}};
+
+function materialNameByTier(t){return t<=3?'Task Stone':'Black Gem';}
+function moneyNameByTier(t){if(t===1)return'Platinum Coin';if(t===5)return'Emerald';return'Crystal Coin';}
+const el=id=>document.getElementById(id);
+
+function applyProtectionToSuccess(s,f,b){
+ const headroom=Math.max(0,100-s);
+ const maxBoost=50;
+ const available=b+f;
+ const inc=Math.min(maxBoost,headroom,available);
+ const fromBreak=Math.min(b,inc);
+ b-=fromBreak;
+ const remaining=inc-fromBreak;
+ const fromFail=Math.min(f,remaining);
+ f-=fromFail;
+ s+=fromBreak+fromFail;
+ const sum=s+f+b;
+ if(sum!==100)f+=100-sum;
+ return[Math.round(s),Math.round(f),Math.round(b)];
+}
+
+function colorize(target,val,mode){
+ target.textContent=val+'%';
+ target.classList.remove('green','orange','red');
+ if(mode==='success')target.classList.add(val>=80?'green':val>=40?'orange':'red');
+ else target.classList.add(val<=40?'orange':'red');
+}
+
+function recalc(){
+ const tier=+el('tier').value;
+ const cur=+el('level').value;
+ const next=cur+1;
+ const prot=el('protection').checked;
+ el('nextLabel').textContent='+'+next;
+ if(next>10){['cloneAmt','matName','matAmt','moneyName','moneyAmt','protCost'].forEach(i=>el(i).textContent='—');colorize(el('succ'),0,'success');colorize(el('fail'),0);colorize(el('break'),0);return;}
+ const row=refineLevel[tier][next];
+ el('cloneAmt').textContent=row.itemAmount1;
+ el('matName').textContent=materialNameByTier(tier);
+ el('matAmt').textContent=row.itemAmount2;
+ el('moneyName').textContent=moneyNameByTier(tier);
+ el('moneyAmt').textContent=row.itemAmount3;
+ el('protCost').textContent=row.protectionCost;
+ let s=row.sucessRate,f=row.failRate,b=row.breakRate;
+ if(prot)[s,f,b]=applyProtectionToSuccess(s,f,b);
+ const total=s+f+b;
+ if(total!==100){const k=100/total;s=Math.round(s*k);f=Math.round(f*k);b=Math.max(0,100-s-f);}
+ colorize(el('succ'),s,'success');colorize(el('fail'),f,'fail');colorize(el('break'),b,'break');
+}
+['tier','level','protection'].forEach(id=>el(id).addEventListener('change',recalc));
+recalc();
+</script>
+
+{% endblock %}

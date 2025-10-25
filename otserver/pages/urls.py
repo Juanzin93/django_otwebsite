@@ -96,6 +96,9 @@ urlpatterns = [
     path("house/<int:house_id>/", views_houses.house_detail, name="house_detail"),
     path("rules/", views.rules, name="rules"),
     path("commands/", views.commands, name="commands"),
+    path("ability_orbs/", views.ability_orbs, name="ability_orbs"),
+    path("refine/", views.refine, name="refine"),
+    path("bestiary/", views.bestiary, name="bestiary"),
     
     path("news/", views_news.news_list, name="news_list"),
     path("news/archive/", views_news.news_archive, name="news_archive"),
@@ -103,5 +106,6 @@ urlpatterns = [
     path("news/<slug:slug>/", views_news.news_detail, name="news_detail"),
     path("tinymce/", include("tinymce.urls")),
     path("api/", views_updater.updater, name="otclient_updater"),
+    path("api/updater.php", views_updater.updater_php),
     re_path(r"^api/(?P<subpath>.+)$", views_updater.api_file, name="api"),
 ]

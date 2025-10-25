@@ -1,0 +1,112 @@
+
+{% extends "pages/index.html" %}
+{% load static %}
+{% block title %}Ability Orbs{% endblock %}
+
+{% block content %}
+<section class="panel" id="ability-orbs">
+  <h2 class="panel__title">Ability Orbs</h2>
+
+  <p>
+    Power up your gear with <b>Ability Orbs</b> found inside two kinds of bags:
+    <b>Ability Orb Bag</b> and <b>Superior Ability Orb Bag</b>.
+    Each bag grants one random orb that adds a permanent bonus to a specific item
+    slot — as shown in the orb’s description.
+  </p>
+
+  <hr>
+
+  <h3>How To Obtain</h3>
+  <p>
+    Ability Orb Bags are <b>rare loot</b> dropped by <span style="color:#ccc;">skulled monsters</span> —
+    special versions of creatures that spawn randomly during hunts.
+  </p>
+
+  <ul>
+    <li>
+      <b>Red-Skulled Creatures</b><br>
+      These enhanced monsters have an increased chance to drop a
+      <b>regular Ability Orb Bag</b>.<br>
+      Examples include <i>Dragons</i>, <i>Giant Spiders</i>, and <i>Heroes</i>.
+    </li>
+    <li style="margin-top:8px;">
+      <b>Black-Skulled Creatures</b><br>
+      Only elite bosses such as <i>Dragon Lords</i>, <i>Demons</i>, and <i>Hydras</i>
+      can drop the <b>Superior Ability Orb Bag</b>. Lesser monsters, even if black-skulled,
+      will still only drop the regular version.
+    </li>
+  </ul>
+
+  <p>
+    Skulled monsters appear at random and are marked by glowing skull icons above their heads.
+    The stronger the skull color, the tougher the battle — and the better the loot chances.
+  </p>
+
+  <hr>
+
+  <h3>How It Works</h3>
+  <ol>
+    <li>Use a bag from your inventory:
+      <ul>
+        <li><b>Ability Orb Bag</b> – standard bonus range.</li>
+        <li><b>Superior Ability Orb Bag</b> – higher tier bonuses.</li>
+      </ul>
+    </li>
+    <li>You’ll receive <b>one Ability Orb</b> with:
+      <ul>
+        <li><b>Bonus</b> type (e.g., Max Health, Sword Skill, Critical Chance).</li>
+        <li><b>Amount</b> – the rolled value within that bag’s range.</li>
+        <li><b>Item</b> – the equipment slot affected (e.g., Helmet, Axe, Bow).</li>
+      </ul>
+    </li>
+    <li>The orb’s description clearly shows its details:</li>
+  </ol>
+
+  <pre style="margin:8px 0;background:#111;color:#ddd;padding:10px;border-radius:6px;white-space:pre-wrap;">Bonus: max health
+Amount: 7
+Item: Helmet</pre>
+
+  <p>
+    <b>Note:</b> Weapon-skill orbs (Axe, Sword, Club, or Distance) only target armor slots
+    and the related weapon type. Other bonuses can land on any armor or weapon slot.
+  </p>
+
+  <hr>
+
+  <h3>Bonus Ranges</h3>
+  <div style="overflow:auto;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="text-align:left;border-bottom:1px solid #444;padding:8px;">Bonus</th>
+          <th style="text-align:center;border-bottom:1px solid #444;padding:8px;">Ability Orb Bag</th>
+          <th style="text-align:center;border-bottom:1px solid #444;padding:8px;">Superior Ability Orb Bag</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:8px;">Max Health</td><td style="text-align:center;">+1 – +5</td><td style="text-align:center;">+6 – +10</td></tr>
+        <tr><td style="padding:8px;">Max Mana</td><td style="text-align:center;">+1 – +5</td><td style="text-align:center;">+6 – +10</td></tr>
+        <tr><td style="padding:8px;">Axe Skill</td><td style="text-align:center;">+1 – +2</td><td style="text-align:center;">+1 – +3</td></tr>
+        <tr><td style="padding:8px;">Sword Skill</td><td style="text-align:center;">+1 – +2</td><td style="text-align:center;">+1 – +3</td></tr>
+        <tr><td style="padding:8px;">Club Skill</td><td style="text-align:center;">+1 – +2</td><td style="text-align:center;">+1 – +3</td></tr>
+        <tr><td style="padding:8px;">Distance Skill</td><td style="text-align:center;">+1 – +2</td><td style="text-align:center;">+1 – +3</td></tr>
+        <tr><td style="padding:8px;">Magic Skill</td><td style="text-align:center;">+1</td><td style="text-align:center;">+1 – +3</td></tr>
+        <tr><td style="padding:8px;">Critical Chance</td><td style="text-align:center;">+1% – +2%</td><td style="text-align:center;">+2% – +5%</td></tr>
+        <tr><td style="padding:8px;">HP Regeneration</td><td style="text-align:center;">+1</td><td style="text-align:center;">+1 – +3</td></tr>
+        <tr><td style="padding:8px;">MP Regeneration</td><td style="text-align:center;">+1</td><td style="text-align:center;">+1 – +3</td></tr>
+        <tr><td style="padding:8px;">Movement Speed</td><td style="text-align:center;">+5 – +10</td><td style="text-align:center;">+11 – +20</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+
+  <h3>Tips</h3>
+  <ul>
+    <li>Farm <b>red-skulled monsters</b> for consistent Ability Orb Bag drops.</li>
+    <li>Hunt elite bosses (<b>Dragon Lords, Demons, Hydras</b>) for Superior bags.</li>
+    <li>Stack similar orbs to specialize your build — offense, defense, or speed.</li>
+  </ul>
+</section>
+
+{% endblock %}

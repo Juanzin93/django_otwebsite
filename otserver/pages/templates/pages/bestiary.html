@@ -1,0 +1,117 @@
+{% extends "pages/index.html" %}
+{% load static %}
+
+{% block title %}Bestiary{% endblock %}
+
+{% block content %}
+<section class="panel" id="bestiary-info">
+  <h3 class="panel__title">Bestiary System</h3>
+  <p>
+    The <strong>Bestiary System</strong> allows players to earn rewards by hunting different monsters across the world.
+    Every creature in the land can be registered in your personal bestiary as you defeat them.
+    Your progress is tracked automatically — each monster has its own kill counter.
+  </p>
+
+  <h4>📖 How It Works</h4>
+  <ul>
+    <li>When you kill a monster, your counter for that creature increases by one.</li>
+    <li>Once you reach a specific number of kills, you unlock <strong>Bestiary Rewards</strong>.</li>
+    <li>Only normal monsters count — summons, bosses, and skulled (special) versions do not count.</li>
+  </ul>
+
+  <h4>🎯 Kill Milestones & Rewards</h4>
+  <table class="bestiary-table">
+    <thead>
+      <tr>
+        <th>Milestone</th>
+        <th>Kills Required</th>
+        <th>Reward</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Stage I</strong></td>
+        <td>100 Kills</td>
+        <td>Experience equal to the monster’s base XP × 100<br>and a small amount of <strong>Task Stones</strong>.</td>
+      </tr>
+      <tr>
+        <td><strong>Stage II</strong></td>
+        <td>500 Kills</td>
+        <td>Experience equal to the monster’s base XP × 250<br>and a medium amount of Task Stones.</td>
+      </tr>
+      <tr>
+        <td><strong>Stage III</strong></td>
+        <td>1,000 Kills</td>
+        <td>Experience equal to the monster’s base XP × 500<br>and a large amount of Task Stones.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>💎 Reward Scaling</h4>
+  <p>
+    The number of <strong>Reward Tokens</strong> depends on the monster’s difficulty:
+  </p>
+  <ul>
+    <li><strong>Low-tier creatures</strong> (under 100 XP): 1 / 3 / 5 tokens</li>
+    <li><strong>Mid-tier creatures</strong> (600–1000 XP): 5 / 10 / 15 tokens</li>
+    <li><strong>High-tier creatures</strong> (2000+ XP): 10 / 15 / 30 tokens</li>
+  </ul>
+
+  <h4>⚔️ Notes</h4>
+  <ul>
+    <li>Mini-bosses or monsters with skulls are excluded from normal bestiary counting.</li>
+    <li>Rewards are granted instantly when you reach each milestone.</li>
+    <li>You can repeat this progress separately for every different creature in the game.</li>
+  </ul>
+
+  <p class="end-note">
+    Keep hunting and complete your Bestiary to earn valuable rewards and experience from every corner of the world!
+  </p>
+</section>
+
+<style>
+  #bestiary-info {
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 15px;
+    text-align: left;
+  }
+  #bestiary-info h4 {
+    margin-top: 1.2em;
+    color: #ffcc66;
+  }
+  #bestiary-info p, #bestiary-info ul {
+    color: #ddd;
+    line-height: 1.5;
+  }
+  #bestiary-info ul {
+    margin-left: 1.2em;
+    list-style: disc;
+  }
+  .bestiary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .bestiary-table th, .bestiary-table td {
+    border: 1px solid #333;
+    padding: 8px;
+    text-align: left;
+  }
+  .bestiary-table th {
+    background: #111;
+    color: #ffcc66;
+  }
+  .bestiary-table td {
+    background: #1a1a1a;
+    color: #ddd;
+  }
+  .end-note {
+    margin-top: 1.5em;
+    font-style: italic;
+    color: #bbb;
+  }
+</style>
+
+{% endblock %}

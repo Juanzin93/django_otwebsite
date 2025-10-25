@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         User = get_user_model()
         promoted = 0
-        for acc in Account.objects.filter(type=6):
+        for acc in Account.objects.filter(type=5):
             username = getattr(acc, "id", None) or getattr(acc, "id", None)
             if not username:
                 self.stdout.write(self.style.WARNING(f"Skip account id={acc.pk}: no username"))

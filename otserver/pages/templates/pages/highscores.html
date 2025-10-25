@@ -7,7 +7,9 @@
     
     <!-- LEFT: Highscores Table -->
     <div class="hs-table">
-      <h3 class="panel__title">HIGHSCORES</h3>
+      <h3 class="panel__title">
+        HIGHSCORES — {{ current_world_label }}
+      </h3>
       <table class="table hs">
         <thead>
           <tr>
@@ -75,9 +77,23 @@
     <aside class="hs-filters">
       <form method="get" id="hs-filters">
         <div class="filter-box">
+          <h4>Choose a World</h4>
+          <a href="?skill={{ selected_skill }}&vocation={{ selected_vocation }}&world=all"
+             class="filter-link {% if not selected_world_id %}active{% endif %}">
+            All
+          </a>
+          {% for w in worlds %}
+            <a href="?skill={{ selected_skill }}&vocation={{ selected_vocation }}&world={{ w.id }}"
+               class="filter-link {% if selected_world_id and selected_world_id == w.id %}active{% endif %}">
+              {{ w.name }}
+            </a>
+          {% endfor %}
+        </div>
+
+        <div class="filter-box">
           <h4>Choose a Skill</h4>
           {% for s in skills %}
-            <a href="?skill={{ s }}&vocation={{ selected_vocation }}"
+            <a href="?skill={{ s }}&vocation={{ selected_vocation }}{% if selected_world_id %}&world={{ selected_world_id }}{% endif %}"
                class="filter-link {% if selected_skill == s %}active{% endif %}">
               {{ s|capfirst }}
             </a>
@@ -87,7 +103,7 @@
         <div class="filter-box">
           <h4>Choose a Vocation</h4>
           {% for v in vocations %}
-            <a href="?skill={{ selected_skill }}&vocation={{ v }}"
+            <a href="?skill={{ selected_skill }}&vocation={{ v }}{% if selected_world_id %}&world={{ selected_world_id }}{% endif %}"
                class="filter-link {% if selected_vocation == v %}active{% endif %}">
               {{ v|upper }}
             </a>

@@ -5,8 +5,37 @@
 
 {% block content %}
 <main class="col col--center">
-  <section class="panel panel--parchment" id="online-panel" data-endpoint="{% url 'server_players' %}">
+  <section class="panel panel--parchment" id="online-panel"
+           data-endpoint="{% url 'server_players' %}{% if selected_world_id %}?world={{ selected_world_id }}{% endif %}">
     <h3 class="panel__title">ONLINE PLAYERS</h3>
+
+    {% if worlds %}
+      <nav class="world-tabs">
+        <a class="filter-link {% if not selected_world_id %}active{% endif %}"
+          href="{% url 'online_list' %}">All Worlds</a>
+        {% for w in worlds %}
+          <a class="filter-link {% if selected_world_id == w.id %}active{% endif %}"
+            href="{% url 'online_list' %}?world={{ w.id }}">{{ w.name }}</a>
+        {% endfor %}
+      </nav>
+    {% endif %}
+<style>
+  /* force horizontal layout for the world links in this panel */
+  #online-panel .world-tabs {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 12px;
+  }
+  /* beat .filter-link { display:block } and any width rules */
+  #online-panel .world-tabs .filter-link {
+    padding: 3px 8px !important;
+    font-size: 12px;
+    border-radius: 5px;
+    height: 24px;
+    line-height: 18px;
+  }
+</style>
 
     <div class="online-meta">
       <span class="dot dot--status"></span>
@@ -31,6 +60,5 @@
   </section>
 </main>
 
-<link rel="stylesheet" href="{% static 'assets/css/components-online.css' %}">
 <script src="{% static 'assets/js/online.js' %}" defer></script>
 {% endblock %}

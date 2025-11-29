@@ -13,6 +13,7 @@ urlpatterns = [
 
     path("server_status/", views.server_status, name="server_status"), # JSON
     path("server_players/", views.server_players, name="server_players"),  # JSON
+    path("client_status/", views.client_status, name="client_status"),
     #path("character/<str:name>/inventory.json", views.character_inventory_json, name="char_inventory_json"), # JSON
     path("character/<str:name>/inventory.json", views.character_inventory, name="character_inventory"),
     path("character/<str:name>/equipment.json", views.character_equipment, name="character_equipment"),

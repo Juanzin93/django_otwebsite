@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.core.cache import cache
-from django.http import JsonResponse, Http404, HttpResponseBadRequest
+from django.http import JsonResponse, Http404, HttpResponseBadRequest, HttpResponse
 from django.utils.html import escape
 from django.urls import reverse
 from django.contrib.auth import get_user_model, login
@@ -22,6 +23,7 @@ import time
 import hashlib
 import logging
 import json
+import requests
 
 from typing import Dict, List, Optional
 from .forms import EmailUpdateForm, SignUpForm, CreateCharacterForm, VOCATION_CHOICES
@@ -423,6 +425,84 @@ def server_players(request):
         data["world"] = selected_world_meta
 
     return JsonResponse(data)
+
+def fetch_discord_online():
+    url = f"https://discord.com/api/guilds/963169032138280970/widget.json"
+    r = requests.get(url, timeout=5)
+    r.raise_for_status()
+    data = r.json()
+    return int(data.get("presence_count", 0))
+
+
+def json_clean(data: dict, status=200):
+    # Serialize compact, no spaces, no newline
+    payload = json.dumps(data, separators=(",", ":"))
+    return HttpResponse(payload, status=status, content_type="application/json")
+
+
+def raw_json_response(data: dict, status=200):
+    payload = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
+    response = HttpResponse(payload, status=status, content_type="application/json; charset=utf-8")
+    response["Content-Length"] = str(len(payload))
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    response["Content-Encoding"] = "identity"  # disable gzip/deflate
+    return response
+
+@csrf_exempt
+def client_status(request):
+    try:
+        body = json.loads(request.body.decode("utf-8") or "{}")
+    except Exception:
+        return raw_json_response({"errorMessage": "Invalid JSON body", "errorCode": 400}, 400)
+
+    req_type = (body.get("type") or "").lower()
+
+    online_data = query_ot_players(
+        settings.OT_STATUS_HOST,
+        int(settings.OT_STATUS_PORT),
+        getattr(settings, "OT_STATUS_TIMEOUT", 5.0),
+        retries=1, backoff=1.0,
+    ) or {"online": False, "list": []}
+
+    playersonline = len(online_data.get("list", [])) if online_data.get("online") else 0
+    if req_type == "cacheinfo":
+        data = {
+            "playersonline": playersonline,
+            "discord_online": fetch_discord_online(),
+            "gamingyoutubestreams": 0,
+            "gamingyoutubeviewer": 0,
+            "youtube_link": "",
+            "discord_link": "https://discord.gg/BfBhFhek6e",
+        }
+        payload = json.dumps(data, separators=(",", ":"))
+        response = HttpResponse(payload, content_type="application/json; charset=utf-8")
+        response["Content-Length"] = str(len(payload))
+        response["Transfer-Encoding"] = "identity"
+        response["Content-Encoding"] = "identity"
+        response["Connection"] = "close"
+        return response
+
+    elif req_type == "eventschedule":
+        return raw_json_response({
+            "lastupdatetimestamp": int(time.time()),
+            "eventlist": []
+        })
+
+    elif req_type == "showoff":
+        return raw_json_response({
+            "news": [], "highscores": [], "screenshots": []
+        })
+
+    elif req_type == "boostedcreature":
+        return raw_json_response({
+            "creature": {"name": "", "loot_bonus": 0, "xp_bonus": 0},
+            "boss": {"name": "", "loot_bonus": 0, "xp_bonus": 0}
+        })
+
+    return raw_json_response({"errorMessage": f"Unknown type '{req_type}'", "errorCode": 422}, 422)
+
 def online_list(request):
     worlds = db.run("select", "SELECT id, name FROM worlds ORDER BY id", {}) or []
     world_param = request.GET.get("world")
